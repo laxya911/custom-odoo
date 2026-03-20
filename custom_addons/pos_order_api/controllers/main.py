@@ -23,6 +23,23 @@ class PosOrderApiController(http.Controller):
                 'message': str(e)
             }
 
+    @http.route('/api/pos/order/update_status', type='jsonrpc', auth='user', methods=['POST'])
+    def update_order_status(self, order_id, status):
+        """
+        Update delivery status via API.
+        """
+        try:
+            request.env['pos.order'].update_delivery_status(order_id=order_id, new_status=status)
+            return {
+                'status': 'success',
+                'message': f'Order {order_id} updated to {status}'
+            }
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': str(e)
+            }
+
     @http.route('/api/pos/session/status', type='jsonrpc', auth='user', methods=['POST'])
     def session_status(self, config_id=False):
         """ Check if a specific or any delivery session is active """
