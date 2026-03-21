@@ -1,6 +1,6 @@
 {
     "name": "RAM Restaurant Website",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "Website",
     "author": "Laxman",
     "summary": "Modern, animated restaurant website for RAM (Odoo 19 Community).",

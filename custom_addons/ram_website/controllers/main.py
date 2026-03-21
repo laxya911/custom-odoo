@@ -56,13 +56,18 @@ class RamWebsiteController(http.Controller):
 
     @http.route(
         ["/ram/product/details"],
-        type="jsonrpc",
+        type="json",
         auth="public",
         methods=["POST"],
         website=True,
     )
     def ram_product_details(self, product_id):
         product = request.env["product.template"].sudo().browse(int(product_id))
+        if not product.exists():
+            variant = request.env["product.product"].sudo().browse(int(product_id))
+            if variant.exists():
+                product = variant.product_tmpl_id
+                
         if not product.exists() or not product.available_in_pos:
             return {"error": "Product not found or not available"}
 
@@ -91,6 +96,7 @@ class RamWebsiteController(http.Controller):
                     "id": item.id,
                     "product_id": item.product_id.id,
                     "name": item.product_id.name,
+                    "price": item.product_id.list_price, # Base price of the product
                     "price_extra": item.extra_price,
                     "image": f"/web/image/product.product/{item.product_id.id}/image_128",
                 })
@@ -105,10 +111,11 @@ class RamWebsiteController(http.Controller):
         # 3. Calculate tax-inclusive price
         # In Odoo 19, compute_all returns a dict with 'total_included'
         currency = request.website.currency_id
-        res = product.taxes_id.compute_all(product.list_price, currency=currency, product=product)
+        res = product.taxes_id.compute_all(product.list_price, currency=currency, product=product.product_variant_id or product)
 
         return {
-            "id": product.id,
+            "id": product.product_variant_id.id if product.product_variant_id else product.id,
+            "template_id": product.id,
             "name": product.name,
             "list_price": res['total_included'],
             "tax_amount": res['total_included'] - res['total_excluded'],
@@ -119,7 +126,7 @@ class RamWebsiteController(http.Controller):
 
     @http.route(
         ["/ram/reviews"],
-        type="jsonrpc",
+        type="json",
         auth="public",
         methods=["POST"],
         website=True,
@@ -170,7 +177,7 @@ class RamWebsiteController(http.Controller):
 
     @http.route(
         ["/ram/cart/get"],
-        type="jsonrpc",
+        type="json",
         auth="user",
         methods=["POST"],
         website=True,
@@ -199,7 +206,7 @@ class RamWebsiteController(http.Controller):
 
     @http.route(
         ["/ram/cart/sync"],
-        type="jsonrpc",
+        type="json",
         auth="user",
         methods=["POST"],
         website=True,
@@ -304,7 +311,7 @@ class RamWebsiteController(http.Controller):
 
     @http.route(
         ["/ram/order/draft"],
-        type="jsonrpc",
+        type="json",
         auth="public",
         methods=["POST"],
         website=True,
@@ -334,19 +341,23 @@ class RamWebsiteController(http.Controller):
         if not request.env.user._is_public():
             order_data['partner_id'] = request.env.user.partner_id.id
 
-        # 3. Set Flag
-        order_data['simulate'] = True
-        order_data['session_id'] = session.id
-        
         # 4. Call API
+        # Ensure simulate is in order_data
+        draft_data = dict(order_data)
+        draft_data['simulate'] = True
+
+        _logger.info("RAM_DRAFT: Calling create_api_order with simulate=True")
         try:
-            return request.env['pos.order'].sudo().create_api_order(order_data)
+            res = request.env['pos.order'].sudo().create_api_order(draft_data)
+            _logger.info(f"RAM_DRAFT: Result type: {type(res)}")
+            return res
         except Exception as e:
+            _logger.error(f"RAM_DRAFT ERROR: {e}")
             return {'error': str(e)}
 
     @http.route(
         ["/ram/order/submit"],
-        type="jsonrpc",
+        type="json",
         auth="public",
         methods=["POST"],
         website=True,

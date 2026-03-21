@@ -606,7 +606,7 @@
                     window.ram_currency_symbol = "<t t-esc="request.website.currency_id.symbol"/>";
                     window.ram_currency_position = "<t t-esc="request.website.currency_id.position"/>";
                 </script>
-                <script type="text/javascript" src="/ram_website/static/src/js/ram_ordering.js"></script>
+                <script type="text/javascript" src="/ram_website/static/src/js/ram_ordering.js?v=3"></script>
                 
                 <t t-call="ram_website.ram_product_configurator"/>
                 
@@ -888,7 +888,7 @@
                     </div>
                     
                     <div class="text-center mt-4">
-                        <a href="/ram" class="btn btn-outline-primary">Back to Menu</a>
+                        <a href="/" class="btn btn-outline-primary">Back to Menu</a>
                     </div>
                 </div>
             </div>
@@ -967,8 +967,8 @@
     
     <template id="ram_payment_confirm_auto_redirect" inherit_id="payment.confirm">
         <xpath expr="//t[@t-call='payment.state_header']" position="after">
-             <t t-if="tx.reference and tx.reference[:7] == 'RAM-WEB' and tx.state in ('done', 'authorized')">
-                 <div class="alert alert-info mt-3 text-center" id="ram_auto_finalize_banner">
+             <t t-if="tx.reference and tx.reference.startswith('RAM-WEB')">
+                 <div class="alert alert-info mt-3 text-center">
                      <p>Payment confirmed. Finalizing your order...</p>
                      <i class="fa fa-spinner fa-spin fa-2x"></i>
                      <span id="ram_redirect_ref" t-att-data-ref="tx.reference" class="d-none"/>
@@ -1016,7 +1016,7 @@
                          <a href="/ram/orders" class="btn btn-outline-secondary">
                             View My Orders
                         </a>
-                        <a href="/ram" class="btn btn-link text-decoration-none text-muted">
+                        <a href="/" class="btn btn-link text-decoration-none text-muted">
                             Continue Shopping
                         </a>
                     </div>

@@ -42,8 +42,17 @@
     },
 
     async init() {
-        console.log("🚀 RAM Ordering Engine V2 Initialized");
+        console.log("%c🚀 RAM Ordering Engine V2 - BUILD: 2026-03-14-E", "color: #fff; background: #28a745; padding: 4px; border-radius: 4px;");
         
+        // --- NEW: Cart Cleanup on Success/Status ---
+        // If we are on a status page or success page, it means an order was just placed.
+        if (window.location.pathname.includes('/order/status/') || window.location.pathname.includes('/order/success/')) {
+            console.log("🧹 Clearing cart after successful order...");
+            localStorage.removeItem('ram_cart');
+            this.cart = [];
+            this.updateUI();
+        }
+
         // 1. Initial Load from LocalStorage
         this.loadCart();
         
@@ -149,14 +158,37 @@
             // 5. Configurator Modal Logic
             if (e.target.closest(".js_ram_close_config")) this.toggleConfigModal(false);
             
-            if (e.target.classList.contains("js_ram_config_select")) {
-                const groupIdx = parseInt(e.target.dataset.groupIdx);
-                const optionId = parseInt(e.target.dataset.optionId);
-                const type = e.target.dataset.type;
-                this.selectConfigOption(groupIdx, optionId, type);
+
+            // 6. Configurator Actions
+            const configAddBtn = e.target.closest("#js_ram_add_configured_item");
+            if (configAddBtn) {
+                console.log("[RAM] Add Configured Item Clicked");
+                this.addConfiguredToCart();
             }
 
-            if (e.target.id === "js_ram_add_configured_item") this.addConfiguredToCart();
+            const qtyBtn = e.target.closest(".js_ram_config_qty");
+            if (qtyBtn) {
+                const comboId = parseInt(qtyBtn.dataset.comboId);
+                const itemId = parseInt(qtyBtn.dataset.itemId);
+                const delta = parseInt(qtyBtn.dataset.delta);
+                this.updateComboQty(comboId, itemId, delta);
+            }
+
+            const qtyRow = e.target.closest(".js_ram_config_qty_row");
+            if (qtyRow && !e.target.closest(".js_ram_config_qty")) {
+                const comboId = parseInt(qtyRow.dataset.comboId);
+                const itemId = parseInt(qtyRow.dataset.itemId);
+                // Default to +1 when row is clicked (unless already at max)
+                this.updateComboQty(comboId, itemId, 1);
+            }
+
+            const selectBtn = e.target.closest(".js_ram_config_select");
+            if (selectBtn) {
+                const groupId = selectBtn.dataset.groupIdx; // Use string for ID compatibility
+                const optionId = parseInt(selectBtn.dataset.optionId);
+                const type = selectBtn.dataset.type;
+                this.selectConfigOption(groupId, optionId, type);
+            }
 
             // 7. Final Submission
             if (e.target.id === "js_ram_submit_order") this.submitOrder();
@@ -245,6 +277,7 @@
 
     saveCart() { 
         localStorage.setItem("ram_cart_v2", JSON.stringify(this.cart)); 
+        localStorage.setItem("ram_cart", JSON.stringify(this.cart)); // Sync with legacy key just in case
         if (window.ram_user_id) {
             this.syncWithDatabase(true); // Background sync
         }
@@ -278,7 +311,7 @@
         }
     },
     loadCart() {
-        const saved = localStorage.getItem("ram_cart_v2");
+        const saved = localStorage.getItem("ram_cart_v2") || localStorage.getItem("ram_cart");
         if (saved) {
             try { this.cart = JSON.parse(saved); } catch (e) { this.cart = []; }
         }
@@ -388,7 +421,7 @@
                 combos: data.combos || [],
                 selections: {
                     attributes: {}, // { attr_id: value_id }
-                    combos: {}     // { combo_id: item_id }
+                    combos: {}     // { combo_id: { item_id: qty } }
                 }
             };
 
@@ -397,7 +430,7 @@
                 if (attr.values.length > 0) this.currentConfig.selections.attributes[attr.id] = attr.values[0].id;
             });
             this.currentConfig.combos.forEach(combo => {
-                if (combo.items.length > 0) this.currentConfig.selections.combos[combo.id] = combo.items[0].id;
+                this.currentConfig.selections.combos[combo.id] = {};
             });
 
             this.renderConfigurator();
@@ -437,18 +470,40 @@
 
         // Combos (e.g., Choose your Drink)
         this.currentConfig.combos.forEach((combo, idx) => {
+            const itemQtys = this.currentConfig.selections.combos[combo.id] || {};
+            const totalQty = Object.values(itemQtys).reduce((a, b) => a + b, 0);
+
             html += `
                 <div class="ram-config-group">
-                    <div class="ram-config-group__title">${combo.name}</div>
-                    <div class="ram-config-options">
-                        ${combo.items.map(item => `
-                            <div class="ram-config-option js_ram_config_select ${this.currentConfig.selections.combos[combo.id] === item.id ? 'active' : ''}" 
-                                 data-group-idx="${combo.id}" data-option-id="${item.id}" data-type="combo">
-                                <img src="${item.image}" class="ram-config-option__img" />
-                                <span class="ram-config-option__name">${item.name}</span>
-                                ${item.price_extra > 0 ? `<span class="ram-config-option__price">+${this.formatPrice(item.price_extra)}</span>` : ''}
+                    <div class="ram-config-group__title d-flex justify-content-between align-items-center">
+                         <div>
+                            <span>${combo.name}</span>
+                            <span class="badge bg-light text-dark ms-2">${totalQty} / ${combo.qty_max}</span>
+                         </div>
+                        <small class="text-muted">${combo.qty_free} free</small>
+                    </div>
+                    <div class="ram-config-options flex-column">
+                        ${combo.items.map(item => {
+                            const qty = itemQtys[item.id] || 0;
+                            return `
+                            <div class="ram-config-item-row d-flex justify-content-between align-items-center mb-2 p-2 rounded border js_ram_config_qty_row ${qty > 0 ? 'bg-light border-primary' : ''}" 
+                                 style="cursor: pointer;"
+                                 data-combo-id="${combo.id}" data-item-id="${item.id}">
+                                <div class="d-flex align-items-center">
+                                    <img src="${item.image}" class="ram-config-option__img me-3" style="width:40px; height:40px; border-radius:4px" />
+                                    <div>
+                                        <div class="fw-bold">${item.name}</div>
+                                        ${item.price_extra > 0 ? `<small class="text-primary">+${this.formatPrice(item.price_extra)} extra</small>` : ''}
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <button class="btn btn-sm btn-outline-secondary js_ram_config_qty" data-combo-id="${combo.id}" data-item-id="${item.id}" data-delta="-1" ${qty <= 0 ? 'disabled' : ''}>-</button>
+                                    <span class="mx-3 fw-bold">${qty}</span>
+                                    <button class="btn btn-sm btn-outline-secondary js_ram_config_qty" data-combo-id="${combo.id}" data-item-id="${item.id}" data-delta="1" ${totalQty >= combo.qty_max ? 'disabled' : ''}>+</button>
+                                </div>
                             </div>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             `;
@@ -458,66 +513,149 @@
         html += `
             <div class="ram-config-group">
                 <div class="ram-config-group__title">Special Instructions</div>
-                <textarea id="ram_config_note" class="form-control" rows="2" placeholder="Ex: No ice, extra spicy..."></textarea>
+                <textarea id="ram_config_note" class="form-control" rows="2" placeholder="Ex: No ice, extra spicy...">${this.currentConfig.customer_note || ''}</textarea>
             </div>
         `;
 
         body.innerHTML = html;
         this.calculateConfigPrice();
     },
+    updateComboQty(comboId, itemId, delta) {
+        // Preserve note
+        const noteElem = document.getElementById("ram_config_note");
+        if (noteElem) this.currentConfig.customer_note = noteElem.value;
+
+        const combo = this.currentConfig.combos.find(c => c.id == comboId);
+        const itemQtys = this.currentConfig.selections.combos[comboId] || {};
+        const currentQty = itemQtys[itemId] || 0;
+        const totalQty = Object.values(itemQtys).reduce((a, b) => a + b, 0);
+
+        if (delta > 0 && totalQty < combo.qty_max) {
+            itemQtys[itemId] = currentQty + 1;
+        } else if (delta < 0 && currentQty > 0) {
+            itemQtys[itemId] = currentQty - 1;
+        }
+        
+        this.currentConfig.selections.combos[comboId] = itemQtys;
+        this.renderConfigurator();
+    },
+
     selectConfigOption(groupId, optionId, type) {
-        if (type === 'attribute') this.currentConfig.selections.attributes[groupId] = optionId;
-        else this.currentConfig.selections.combos[groupId] = optionId;
+        if (type !== 'attribute') return;
+        // Preserve note
+        const noteElem = document.getElementById("ram_config_note");
+        if (noteElem) this.currentConfig.customer_note = noteElem.value;
+
+        const attr = this.currentConfig.attributes.find(a => a.id == groupId);
+        if (!attr) return;
+
+        // Simple single-select for now, can expand to multi if needed
+        if (this.currentConfig.selections.attributes[groupId] === optionId) {
+            delete this.currentConfig.selections.attributes[groupId];
+        } else {
+            this.currentConfig.selections.attributes[groupId] = optionId;
+        }
         this.renderConfigurator();
     },
 
     calculateConfigPrice() {
         let total = this.currentConfig.base_price;
         
-        Object.entries(this.currentConfig.selections.attributes).forEach(([attrId, valId]) => {
-            const attr = this.currentConfig.attributes.find(a => a.id == attrId);
-            if (attr) {
+        // 1. Attributes Extra
+        Object.values(this.currentConfig.selections.attributes).forEach(valId => {
+            this.currentConfig.attributes.forEach(attr => {
                 const val = attr.values.find(v => v.id == valId);
                 if (val) total += val.price_extra;
-            }
+            });
         });
 
-        Object.entries(this.currentConfig.selections.combos).forEach(([comboId, itemId]) => {
+        // 2. Combos (Free vs Paid logic)
+        Object.entries(this.currentConfig.selections.combos).forEach(([comboId, itemQtys]) => {
             const combo = this.currentConfig.combos.find(c => c.id == comboId);
-            if (combo) {
+            if (!combo) return;
+
+            const qtyFree = parseInt(combo.qty_free || 0);
+            const flatItems = [];
+            Object.entries(itemQtys).forEach(([itemId, qty]) => {
                 const item = combo.items.find(i => i.id == itemId);
-                if (item) total += item.price_extra;
-            }
+                if (item && qty > 0) {
+                    for (let i = 0; i < qty; i++) {
+                        flatItems.push({ 
+                            name: item.name, 
+                            price: parseFloat(item.price || 0), 
+                            extra: parseFloat(item.price_extra || 0) 
+                        });
+                    }
+                }
+            });
+
+            // Sort by base price ascending (Cheapest items are free)
+            flatItems.sort((a, b) => a.price - b.price);
+            
+            console.log(`[CONFIG] Group: ${combo.name}, Qty Free: ${qtyFree}, Total Selected: ${flatItems.length}`);
+
+            flatItems.forEach((item, idx) => {
+                if (idx < qtyFree) {
+                    // Item is FREE
+                    console.log(`  - ${item.name} is FREE (included in group)`);
+                } else {
+                    // Item is PAID
+                    const itemTotal = item.price + item.extra;
+                    total += itemTotal;
+                    console.log(`  - ${item.name} is PAID (+${item.price} base +${item.extra} extra): +${itemTotal}`);
+                }
+            });
         });
+
+        console.log(`[CONFIG] Final Calculated Total: ${total}`);
 
         const target = document.getElementById("ram_config_total_price");
         if (target) {
             target.textContent = total.toFixed(2);
-            // Also update the visible parent label if it exists
-            const parent = target.parentElement;
-            if (parent && parent.innerText.includes('Total')) {
-                // Ensure currency symbol is preserved or re-added if we want full replacement
-                // For now, fast fix: just update the number
-            }
         }
     },
     
     _getCalculatedConfigTotal() {
-        // Fallback helper for submission
+        // Reuse main calculation logic but return result instead of updating UI
         let total = this.currentConfig.base_price;
-        Object.entries(this.currentConfig.selections.attributes).forEach(([attrId, valId]) => {
-            const attr = this.currentConfig.attributes.find(a => a.id == attrId);
-            if (attr) {
+        
+        // 1. Attributes
+        Object.values(this.currentConfig.selections.attributes).forEach(valId => {
+            this.currentConfig.attributes.forEach(attr => {
                 const val = attr.values.find(v => v.id == valId);
                 if (val) total += val.price_extra;
-            }
+            });
         });
-        Object.entries(this.currentConfig.selections.combos).forEach(([comboId, itemId]) => {
+
+        // 2. Combos
+        Object.entries(this.currentConfig.selections.combos).forEach(([comboId, itemQtys]) => {
             const combo = this.currentConfig.combos.find(c => c.id == comboId);
-            if (combo) {
+            if (!combo) return;
+
+            const qtyFree = parseInt(combo.qty_free || 0);
+            const flatItems = [];
+            Object.entries(itemQtys).forEach(([itemId, qty]) => {
                 const item = combo.items.find(i => i.id == itemId);
-                if (item) total += item.price_extra;
-            }
+                if (item && qty > 0) {
+                    for (let i = 0; i < qty; i++) {
+                        flatItems.push({ price: parseFloat(item.price || 0), extra: parseFloat(item.price_extra || 0) });
+                    }
+                }
+            });
+
+            console.log(`Combo ${comboId} Calculation - QtyFree: ${qtyFree}`, flatItems);
+            flatItems.sort((a, b) => a.price - b.price);
+            flatItems.forEach((item, idx) => {
+                if (idx >= qtyFree) {
+                    const cost = (item.price + item.extra);
+                    console.log(`  Item ${idx}: PAID - Cost: ${cost} (P:${item.price} + E:${item.extra})`);
+                    total += cost;
+                } else {
+                    const extra_only = item.extra;
+                    console.log(`  Item ${idx}: FREE (Quota) - Extra Charged: ${extra_only}`);
+                    total += extra_only; // POS 19: Only the BASE price is waived, extra_price is always paid.
+                }
+            });
         });
         return total;
     },
@@ -527,11 +665,23 @@
         let summary = [];
         
         const attribute_value_ids = Object.values(selections.attributes);
-        const combo_line_ids = Object.entries(selections.combos).map(([comboId, itemId]) => {
+        const combo_line_ids = [];
+        
+        Object.entries(selections.combos).forEach(([comboId, itemQtys]) => {
             const combo = this.currentConfig.combos.find(c => c.id == comboId);
-            const item = combo.items.find(i => i.id == itemId);
-            summary.push(item.name);
-            return { combo_id: parseInt(comboId), combo_item_id: parseInt(itemId), product_id: item.product_id, qty: 1 };
+            Object.entries(itemQtys).forEach(([itemId, qty]) => {
+                if (qty <= 0) return;
+                const item = combo.items.find(i => i.id == itemId);
+                if (item) {
+                    summary.push(`${qty}x ${item.name}`);
+                    combo_line_ids.push({ 
+                        combo_id: parseInt(comboId), 
+                        combo_item_id: parseInt(itemId), 
+                        product_id: item.product_id, 
+                        qty: qty 
+                    });
+                }
+            });
         });
 
         // Add attribute names to summary
@@ -547,7 +697,6 @@
         this.addToCart({
             product_id: this.currentConfig.product_id,
             name: this.currentConfig.name,
-            price: parseFloat(document.getElementById("ram_config_total_price").text), // Accessing .textContent was fine, but let's check parse
             price: parseFloat(document.getElementById("ram_config_total_price").textContent), 
             tax_amount: this.currentConfig.tax_amount, 
             qty: 1,
@@ -569,7 +718,19 @@
         const isOpen = sidebar.classList.contains("active");
         const newState = forceOpen !== undefined ? forceOpen : !isOpen;
         sidebar.classList.toggle("active", newState);
-        sidebar.setAttribute("aria-hidden", (!newState).toString());
+        
+        if (!newState) {
+            // Cart is hiding
+            sidebar.setAttribute("aria-hidden", "true");
+            sidebar.setAttribute("inert", "");
+            if (document.activeElement && sidebar.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
+        } else {
+            // Cart is showing
+            sidebar.setAttribute("aria-hidden", "false");
+            sidebar.removeAttribute("inert");
+        }
     },
 
     toggleConfigModal(show, loading = false) {
@@ -671,8 +832,8 @@
         const totalTax = this.serverTotals ? this.serverTotals.amount_tax : this.cart.reduce((sum, i) => sum + ((i.tax_amount || 0) * i.qty), 0);
 
         document.querySelectorAll(".ram-cart-count").forEach(el => el.textContent = totalItems);
-        document.querySelectorAll(".ram-cart-total-price").forEach(el => el.textContent = totalPrice.toFixed(2));
-        document.querySelectorAll(".ram-cart-total-tax").forEach(el => el.textContent = totalTax.toFixed(2));
+        document.querySelectorAll(".ram-cart-total-price").forEach(el => el.textContent = (totalPrice || 0).toFixed(2));
+        document.querySelectorAll(".ram-cart-total-tax").forEach(el => el.textContent = (totalTax || 0).toFixed(2));
 
         const floating = document.getElementById("ram_cart_floating");
         if (floating) {
