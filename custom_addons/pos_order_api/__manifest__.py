@@ -14,13 +14,17 @@
     'data': [
         'data/ir_cron_data.xml',
         'views/pos_config_views.xml',
+        'views/pos_order_delivery_views.xml',
+        'views/pos_order_delivery_menus.xml',
     ],
     'assets': {
         'point_of_sale.assets_prod': [
             'pos_order_api/static/src/xml/DeliveryToggle.xml',
             'pos_order_api/static/src/xml/RemoteOrderUI.xml',
+            'pos_order_api/static/src/xml/DeliveryStatusPanel.xml',
             'pos_order_api/static/src/js/DeliveryToggle.js',
             'pos_order_api/static/src/js/RemoteOrderSync.js',
+            'pos_order_api/static/src/js/DeliveryStatusPanel.js',
             'pos_order_api/static/src/css/DeliveryToggle.css',
         ],
     },

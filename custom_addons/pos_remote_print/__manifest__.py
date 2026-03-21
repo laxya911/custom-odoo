@@ -9,9 +9,10 @@
         - Uses Bus to notify active tablets.
         - Tablets claim order and print to kitchen.
     """,
-    'depends': ['point_of_sale'],
+    'depends': ['point_of_sale', 'pos_order_api'],
     'assets': {
-        'point_of_sale.assets': [
+        'point_of_sale.assets_prod': [
+            'pos_remote_print/static/src/js/models.js',
             'pos_remote_print/static/src/js/remote_print.js',
         ],
     },

@@ -127,15 +127,12 @@ yarn-error.log*
 # ============================================
 odoo/filestore/
 odoo/addons/base/maintenance/
-
+.odoo-data/
 # ============================================
 # Local Configuration (sensitive)
 # ============================================
-/odoo.conf
-/docker.conf
-/config/odoo.conf
-docker-compose.override.yml
-
+docker-compose.local.yml
+/config/
 # ============================================
 # Platform-Specific
 # ============================================
