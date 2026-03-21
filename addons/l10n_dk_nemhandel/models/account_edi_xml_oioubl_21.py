@@ -144,25 +144,33 @@ class AccountEdiXmlOIOUBL21(models.AbstractModel):
                 'schemeID': 'DK:CVR' if vat[:2] == 'DK' else 'ZZZ'
             },
         })
-        party_node['cac:PartyTaxScheme'].update({
-            # Only DK:SE for PartyTaxScheme https://oioubl21.oioubl.dk/Classes/da/PartyTaxScheme.html
-            'cbc:CompanyID': {
-                '_text': vat,
-                'schemeID': 'DK:SE' if vat[:2] == 'DK' else 'ZZZ'
-            },
-            'cac:TaxScheme': {
-                'cbc:ID': {
-                    '_text': 63,
-                    'schemeID': 'urn:oioubl:id:taxschemeid-1.5',
+        if vat and vat != '/':
+            party_node['cac:PartyTaxScheme'].update({
+                # Only DK:SE for PartyTaxScheme https://oioubl21.oioubl.dk/Classes/da/PartyTaxScheme.html
+                'cbc:CompanyID': {
+                    '_text': vat,
+                    'schemeID': 'DK:SE' if vat[:2] == 'DK' else 'ZZZ'
                 },
-                'cbc:Name': {'_text': 'Moms'},
-            },
-        })
+                'cac:TaxScheme': {
+                    'cbc:ID': {
+                        '_text': 63,
+                        'schemeID': 'urn:oioubl:id:taxschemeid-1.5',
+                    },
+                    'cbc:Name': {'_text': 'Moms'},
+                },
+            })
         if partner.nemhandel_identifier_type and partner.nemhandel_identifier_value:
             prefix = 'DK' if partner.nemhandel_identifier_type == '0184' else ''
             party_node['cbc:EndpointID'] = {
                 '_text': f'{prefix}{partner.nemhandel_identifier_value}',
                 'schemeID': SCHEME_ID_MAPPING[partner.nemhandel_identifier_type],
+            }
+        if partner.nemhandel_identifier_value or partner.ref:
+            party_node['cac:PartyIdentification'] = {
+                'cbc:ID': {
+                    '_text': partner.nemhandel_identifier_value or partner.ref,
+                    'schemeID': SCHEME_ID_MAPPING[partner.nemhandel_identifier_type],
+                }
             }
 
         return party_node

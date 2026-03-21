@@ -3809,6 +3809,17 @@ class TestMrpOrder(TestMrpCommon):
         self.assertEqual(mo.state, 'confirmed')
         self.assertEqual(len(mo.workorder_ids), 2)
 
+    def test_unlink_update_workcenter_productivity(self):
+        """ Test that workcenter_productivity entries for deleted work order has end date set
+        """
+        mo_form = Form(self.env['mrp.production'])
+        mo_form.bom_id = self.bom_3
+        mo = mo_form.save()
+        mo.workorder_ids[0].button_start()
+        time_log = mo.workorder_ids[0].time_ids[0]
+        mo.workorder_ids[0].unlink()
+        self.assertIsNot(time_log.date_end, False)
+
     def test_consumption_action_set_qty_and_validate(self):
         """
         Check `To Consume` and `Consumed` qty are correctly updated to match the consumption warning values
@@ -4869,6 +4880,14 @@ class TestMrpOrder(TestMrpCommon):
         self.assertEqual(fields.Datetime.now(), production.workorder_ids.date_start)
         self.assertEqual(fields.Datetime.now() + timedelta(hours=6), production.workorder_ids.date_finished, "The time difference should be 6 hours: 6 for the shift and 0 for the lunch pause")
 
+        production.workorder_ids.workcenter_id = self.workcenter_2.id
+        workcenter_5.time_efficiency = 50
+        self.assertEqual(production.workorder_ids.date_finished, fields.Datetime.now() + timedelta(hours=7), "The time difference should be 7 hours: 6 for the shift and 1 for the lunch pause")
+        production.workorder_ids.workcenter_id = workcenter_5
+        self.assertEqual(production.workorder_ids.date_finished, fields.Datetime.now() + timedelta(hours=12), "The time difference should be 12 hours: 6 / 0.5 for the shift and 0 for the lunch pause")
+        production.workorder_ids.workcenter_id = self.workcenter_2.id
+        self.assertEqual(production.workorder_ids.date_finished, fields.Datetime.now() + timedelta(hours=7), "The time difference should be 7 hours: 6 for the shift and 1 for the lunch pause")
+
     def test_compute_tracked_time_3(self):
         """
         Checks that the expected duration calculation is correct when the BoM has a different UoM than the product.
@@ -5252,6 +5271,90 @@ class TestMrpOrder(TestMrpCommon):
         # Check that the serial numbers follow the sequence
         self.assertEqual(mo2.lot_producing_ids.mapped('name'), ['customMRPSerial0000001', 'customMRPSerial0000002', 'customMRPSerial0000003'])
 
+    def test_compute_date_finished_with_workcenter_calendar(self):
+        """
+        Test that finished date of the production depends properly on the workcenter availability.
+
+        Have two wokcenters: WC1 (op 1) opened 8/5, WC2 opened 24/5 (op 2, 3)
+
+        Check finish date for a production of:
+            - 1 unit
+            - 10 units (exceeds one day of work for WC1)
+        """
+        calendars = self.env['resource.calendar'].sudo().create([
+            {
+                'attendance_ids': [
+                    Command.create({
+                        'dayofweek': str(weekday),
+                        'day_period': period,
+                        'hour_from': am_start if period == 'morning' else pm_start,
+                        'hour_to': am_end if period == 'morning' else pm_end,
+                        'name': f'Day {weekday} {period} H {f"{am_start} {am_end}" if period == "morning" else f"{pm_start} {pm_end}"}',
+                    })
+                    for weekday in range(5)
+                    for period in ('morning', 'afternoon')
+                ],
+                'leave_ids': [Command.create({
+                    'date_from': datetime(2024, 1, 8, 0, 0, 0),
+                    'date_to': datetime(2024, 1, 9, 0, 0, 0),
+                })],
+                'name': name,
+                'tz': 'UTC',
+            }
+            for am_start, am_end, pm_start, pm_end, name in [
+                (8, 12, 13, 17, 'Test calendar 40h'),
+                (0, 12, 12, 24, 'Test full calendar 24h/5d')
+            ]
+        ])
+        workcenters = self.env['mrp.workcenter'].create([
+            {
+                'name': f'Simple Workcenter {i}',
+                'time_start': 0,
+                'time_stop': 0,
+                'time_efficiency': time_efficiency,
+                'resource_calendar_id': calendars[i].id,
+            }
+            for i, time_efficiency in enumerate([50, 100])
+        ])
+        bom = self.env['mrp.bom'].create({
+            'product_tmpl_id': self.product_6.product_tmpl_id.id,
+            'product_qty': 1.0,
+            'operation_ids': [
+                Command.create({'name': 'Op 1', 'workcenter_id': workcenters[0].id,
+                        'time_mode_batch': 1, 'time_mode': "auto", 'time_cycle_manual': 18}),
+                Command.create({'name': 'Op 2', 'workcenter_id': workcenters[1].id,
+                        'time_mode_batch': 1, 'time_mode': "auto", 'time_cycle_manual': 24}),
+                Command.create({'name': 'Op 3', 'workcenter_id': workcenters[1].id,
+                        'time_mode_batch': 1, 'time_mode': "auto", 'time_cycle_manual': 66}),
+            ],
+            'type': 'normal',
+            'bom_line_ids': [
+                Command.create({'product_id': self.product_1.id, 'product_qty': 1}),
+            ],
+        })
+        production = self.env['mrp.production'].create(
+            {
+                'product_id': self.product_6.id,
+                'bom_id': bom.id,
+                'product_qty': 1,
+                'date_start': datetime(2024, 1, 1, 8, 0, 0),
+            },
+        )
+        production.action_confirm()
+        self.assertAlmostEqual(production.date_finished, datetime(2024, 1, 1, 9, 30, 0), delta=timedelta(seconds=2))
+
+        production.write({'date_start': datetime(2024, 1, 1, 10, 0, 0), 'product_qty': 10})
+        # First WC finished on the first day, the second one still has 1 hour to do
+        self.assertAlmostEqual(production.date_finished, datetime(2024, 1, 2, 1, 0, 0), delta=timedelta(seconds=2))
+
+        production.write({'date_start': datetime(2024, 1, 1, 16, 0, 0)})
+        # Start at 16pm, so still 5h to do the next day
+        self.assertAlmostEqual(production.date_finished, datetime(2024, 1, 2, 14, 0, 0), delta=timedelta(seconds=2))
+
+        production.write({'date_start': datetime(2024, 1, 5, 16, 0, 0)})
+        # The workcenter does not work in the weekend + the monday is a leave
+        self.assertAlmostEqual(production.date_finished, datetime(2024, 1, 9, 14, 0, 0), delta=timedelta(seconds=2))
+
     def test_mark_done_multi_mo_with_different_uom(self):
         """Test marking multiple productions as done with different product UoMs."""
         mo1, mo2 = self.env['mrp.production'].create([
@@ -5322,6 +5425,46 @@ class TestMrpOrder(TestMrpCommon):
         mo_form.product_qty = 10
         mo = mo_form.save()
         self.assertEqual(len(mo.workorder_ids), 1)
+
+    def test_workorder_update_based_on_bom_and_qty_onchanges(self):
+        """Test that work orders are updated rather than duplicated when
+        switching BoMs and then modifying the quantity in the draft form.
+        """
+        product = self.env['product.product'].create({
+            'name': 'Test Finished Product',
+            'is_storable': True,
+        })
+        workcenter = self.env['mrp.workcenter'].create({'name': 'Assembly Line'})
+        operation_vals = [Command.create({
+            'name': 'Manual Assembly',
+            'workcenter_id': workcenter.id,
+            'time_cycle': 60,
+            'sequence': 1,
+        })]
+        bom_empty, bom_with_ops = self.env['mrp.bom'].create([{
+            'product_tmpl_id': product.product_tmpl_id.id,
+            'product_qty': 1.0,
+            'operation_ids': vals,
+        } for vals in ([], operation_vals)])
+
+        mo = self.env["mrp.production"].create({
+            "product_id": product.id,
+            "bom_id": bom_empty.id,
+            "product_uom_id": product.uom_id.id,
+            "product_qty": 1.0,
+        })
+
+        with Form(mo) as mo_form:
+            mo_form.bom_id = bom_with_ops
+            self.assertEqual(len(mo_form.workorder_ids), 1)
+            mo_form.product_qty = 10.0
+            self.assertEqual(len(mo_form.workorder_ids), 1)
+            mo_form.bom_id = bom_empty
+            self.assertEqual(len(mo_form.workorder_ids), 0)
+            mo_form.bom_id = bom_with_ops
+            self.assertEqual(len(mo_form.workorder_ids), 1)
+            mo_form.bom_id = self.env['mrp.bom']
+            self.assertEqual(len(mo_form.workorder_ids), 0)
 
 
 @tagged('-at_install', 'post_install')
@@ -5400,13 +5543,13 @@ class TestTourMrpOrder(HttpCase):
         self.assertEqual(mo.move_byproduct_ids.quantity, 7)
         self.assertEqual(len(mo.move_byproduct_ids.move_line_ids), 1)
 
-    def test_mrp_multi_step_product_catalog_component_transfer(self):
+    def test_mrp_multi_step_draft_mo_creates_component_transfer(self):
         '''
-        Ensure a transfer to pre-prod is created for components added through
-        the catalog.
+        Ensure a transfer to pre-prod is created for components even when the MO
+        is in draft.
         '''
         # Enable storage locations
-        self.env['res.config.settings'].create({'group_stock_multi_locations': True}).execute()
+        self.env.user.group_ids += self.env.ref('stock.group_stock_multi_locations')
         # Set WH manufacture to 2-step
         warehouse = self.env.ref('stock.warehouse0')
         warehouse.manufacture_steps = 'pbm'
@@ -5420,9 +5563,22 @@ class TestTourMrpOrder(HttpCase):
             'warehouse_id': warehouse.id,
         })
         self.assertEqual(len(mo.move_raw_ids), 0)
+        self.assertEqual(mo.state, 'draft')
 
-        url = f'/odoo/action-mrp.mrp_production_action/{mo.id}'
-        self.start_tour(url, 'test_mrp_multi_step_product_catalog_component_transfer', login='admin')
+        self.authenticate('admin', 'admin')
+        self.opener.post(
+            url=self.base_url() + '/product/catalog/update_order_line_info',
+            json={
+                "params": {
+                    'res_model': 'mrp.production',
+                    'order_id': mo.id,
+                    'product_id': component.id,
+                    'quantity': 2,
+                    'child_field': 'move_raw_ids',
+                },
+            },
+        )
+
         self.assertEqual(len(mo.move_raw_ids), 1)
 
         mo.action_confirm()

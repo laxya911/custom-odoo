@@ -119,6 +119,7 @@ class MrpSubcontractingPurchaseTest(TestAccountSubcontractingFlows):
         """ Tests when a PO for a subcontracted product has its qty decreased after confirmation
         """
 
+        self.finished.seller_ids.price = 50.0  # to merge the neg move
         product_qty = 5.0
         po = self.env['purchase.order'].create({
             'partner_id': self.subcontractor_partner1.id,
@@ -513,21 +514,19 @@ class MrpSubcontractingPurchaseTest(TestAccountSubcontractingFlows):
         self.company.days_to_purchase = 5
         self.comp2.bom_ids.unlink()
 
-        self.env['product.supplierinfo'].create({
-            'product_tmpl_id': self.finished.product_tmpl_id.id,
-            'partner_id': self.subcontractor_partner1.id,
-            'price': 648.0,
-            'delay': 15
+        self.finished.seller_ids.write({
+            'price': 648,
+            'delay': 15,
         })
         self.env['product.supplierinfo'].create({
             'product_tmpl_id': self.comp1.product_tmpl_id.id,
-            'partner_id': self.subcontractor_partner1.id,
+            'partner_id': self.vendor.id,
             'price': 648.0,
             'delay': 10
         })
         self.env['product.supplierinfo'].create({
             'product_tmpl_id': self.comp2.product_tmpl_id.id,
-            'partner_id': self.subcontractor_partner1.id,
+            'partner_id': self.vendor.id,
             'price': 648.0,
             'delay': 6
         })
@@ -638,6 +637,41 @@ class MrpSubcontractingPurchaseTest(TestAccountSubcontractingFlows):
         comp_receipt.move_ids.picked = True
         comp_receipt.button_validate()
         self.assertEqual(ressuply_pick.state, 'assigned')
+
+    def test_subcontract_with_multi_receipts(self):
+        """
+        Compute the value of a subcontract move with multiple receipts
+        Up to 18.4: a stock move could have multiple move_dest_ids
+        """
+        self.env['mrp.bom'].create({
+            'product_tmpl_id': self.product.product_tmpl_id.id,
+            'product_qty': 1.0,
+            'type': 'subcontract',
+            'subcontractor_ids': [(4, self.subcontractor_partner1.id)],
+        })
+        po = self.env['purchase.order'].create({
+            'partner_id': self.subcontractor_partner1.id,
+            'order_line': [Command.create({
+                'product_id': self.product.id,
+                'product_qty': 5,
+                'product_uom_id': self.product.uom_id.id,
+            })],
+        })
+        po.button_confirm()
+
+        self.assertEqual(len(po.picking_ids), 1)
+        self.assertEqual(len(po.picking_ids.move_line_ids), 1)
+
+        po.picking_ids.move_line_ids.quantity = 2
+        Form.from_action(self.env, po.picking_ids.button_validate()).save().process()
+
+        po.picking_ids.filtered(lambda x: x.state == 'assigned').button_validate()
+
+        subcontract_mo_move = po.picking_ids.move_ids.move_orig_ids[0]
+        subcontract_mo_move.move_dest_ids = po.picking_ids.move_ids
+        self.assertEqual(len(subcontract_mo_move.move_dest_ids), 2)
+
+        self.assertEqual(subcontract_mo_move._get_value_from_account_move(1).get('value'), 20.0)
 
     def test_update_qty_purchased_with_subcontracted_product(self):
         """
@@ -885,18 +919,17 @@ class MrpSubcontractingPurchaseTest(TestAccountSubcontractingFlows):
         replenishment/orderpoint has a sensible planned reception date.
         """
         wh = self.warehouse
-        self.finished2.seller_ids = [Command.create({
-            'partner_id': self.subcontractor_partner1.id,
-            'delay': 0,
-        })]
-        final_product = self.finished2
-        orderpoint = self.env['stock.warehouse.orderpoint'].create({'product_id': final_product.id})
+        self.finished.seller_ids.delay = 0
+        orderpoint = self.env['stock.warehouse.orderpoint'].create({
+            'product_id': self.finished.id,
+            'location_id': self.stock_location.id,
+        })
         out_picking = self.env['stock.picking'].create({
             'picking_type_id': wh.out_type_id.id,
             'location_id': wh.lot_stock_id.id,
             'location_dest_id': self.customer_location.id,
             'move_ids': [Command.create({
-                'product_id': final_product.id,
+                'product_id': self.finished.id,
                 'product_uom_qty': 2,
                 'location_id': wh.lot_stock_id.id,
                 'location_dest_id': self.customer_location.id,
@@ -912,7 +945,7 @@ class MrpSubcontractingPurchaseTest(TestAccountSubcontractingFlows):
         orderpoint.action_replenish()
         purchase_order = self.env['purchase.order'].search([
             ('order_line', 'any', [
-                ('product_id', '=', self.finished2.id),
+                ('product_id', '=', self.finished.id),
             ]),
         ], limit=1)
         self.assertEqual(purchase_order.date_planned.date(), Date.today())
@@ -950,3 +983,46 @@ class MrpSubcontractingPurchaseTest(TestAccountSubcontractingFlows):
         with Form(mo) as production_form:
             production_form.date_start = original_mo_start_date
         self.assertEqual(mo.date_start, original_mo_start_date)
+
+    def test_create_invoice_with_subcontracted_tracked_products(self):
+        """ Ensure that invoice creation doesn't trigger an error
+        with subcontracted tracked products."""
+        todo_nb = 5
+        self.finished2.tracking = 'serial'
+        self.finished2.purchase_method = 'purchase'
+        po = self.env['purchase.order'].create({
+            'partner_id': self.subcontractor_partner1.id,
+            'order_line': [(0, 0, {
+                'product_id': self.finished2.id,
+                'product_qty': todo_nb,
+                'price_unit': 50,
+            })],
+        })
+
+        po.button_confirm()
+        picking_receipt = po.picking_ids
+        picking_receipt.do_unreserve()
+
+        serials_finished = []
+        for i in range(todo_nb):
+            serials_finished.append(self.env['stock.lot'].create({
+                'name': 'serial_fin_%s' % i,
+                'product_id': self.finished2.id,
+            }))
+
+        action = picking_receipt.move_ids.action_show_details()
+        with Form(picking_receipt.move_ids.with_context(action['context']), view=action['view_id']) as move_form:
+            for serial in serials_finished:
+                with move_form.move_line_ids.new() as move_line:
+                    move_line.lot_id = serial
+                    move_line.picked = True
+                    move_line.quantity = 1
+            move_form.save()
+
+        picking_receipt.move_ids.picked = True
+        picking_receipt.button_validate()
+        self.assertEqual(picking_receipt.state, 'done')
+
+        po.action_create_invoice()
+        invoice = po.invoice_ids
+        self.assertTrue(invoice)

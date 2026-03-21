@@ -1343,14 +1343,14 @@ class Website(models.Model):
             if model_name == 'ir.ui.view':
                 dependency_records = _handle_views_and_pages(dependency_records)
             if dependency_records:
-                model_name = self.env['ir.model']._display_name_for([model_name])[0]['display_name']
+                model_display_name = self.env['ir.model']._display_name_for([model_name])[0]['display_name']
                 field_string = Model.fields_get()[field_name]['string']
-                dependencies.setdefault(model_name, [])
-                dependencies[model_name] += [{
+                dependencies.setdefault(model_display_name, [])
+                dependencies[model_display_name] += [{
                     'field_name': field_string,
                     'record_name': rec.display_name,
                     'link': 'website_url' in rec and rec.website_url or f'/odoo/{model_name}/{rec.id}',
-                    'model_name': model_name,
+                    'model_name': model_display_name,
                 } for rec in dependency_records]
 
         return dependencies
@@ -1737,7 +1737,7 @@ class Website(models.Model):
         if len(self.env['website.rewrite'].search(redirects_domain, limit=1)) > 0:
             return True
 
-        router = request.env['ir.http'].routing_map().bind_to_environ(request.httprequest.environ)
+        router = self.env['ir.http'].routing_map().bind('')
         # If there is no rules matching this page, it does not exists
         if not router.test(path_info=page, method='GET'):
             return False
@@ -1801,7 +1801,7 @@ class Website(models.Model):
         if (self.env.user.has_group('base.group_system')
                 or self.env.user.has_group('website.group_website_designer')):
             return self.env["ir.actions.actions"]._for_xml_id("website.backend_dashboard")
-        return self.env["ir.actions.actions"]._for_xml_id("website.action_website")
+        raise AccessError(_("You don't have the necessary access rights to access this dashboard."))
 
     def get_client_action_url(self, url, mode_edit=False, mode_debug=0):
         action_params = {

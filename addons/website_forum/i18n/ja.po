@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-30 18:38+0000\n"
-"PO-Revision-Date: 2026-01-13 15:35+0000\n"
+"POT-Creation-Date: 2026-02-20 18:37+0000\n"
+"PO-Revision-Date: 2026-02-02 13:44+0000\n"
 "Last-Translator: \"Junko Augias (juau)\" <juau@odoo.com>\n"
 "Language-Team: Japanese <https://translate.odoo.com/projects/odoo-19/"
 "website_forum/ja/>\n"
@@ -137,7 +137,7 @@ msgstr "コメントを削除するには、%dカルマが必要です。"
 #. odoo-python
 #: code:addons/website_forum/models/forum_post.py:0
 msgid "%d karma required to delete or reactivate a post."
-msgstr "投稿を削除または再アクティブ化するには、%dカルマが必要です。"
+msgstr "投稿を削除または再有効化するには、%dカルマが必要です。"
 
 #. module: website_forum
 #. odoo-python
@@ -243,26 +243,6 @@ msgid ""
 msgstr ""
 "<a class=\"btn btn-primary forum_register_url o_translate_inline\" href=\"/"
 "web/login\">新規登録</a>"
-
-#. module: website_forum
-#: model_terms:ir.ui.view,arch_db:website_forum.404
-msgid ""
-"<a class=\"btn-link o_translate_inline\" t-attf-href=\"/forum\"><i "
-"class=\"oi oi-arrow-right display-inline-block\"/> Return to questions list</"
-"a>"
-msgstr ""
-"<a class=\"btn-link o_translate_inline\" t-attf-href=\"/forum\"><i "
-"class=\"oi oi-arrow-right display-inline-block\"/> 質問リストに戻る</a>"
-
-#. module: website_forum
-#: model_terms:ir.ui.view,arch_db:website_forum.forum_all_oe_structure_forum_all_top
-msgid ""
-"<a class=\"mb-2 o_translate_inline\" t-attf-href=\"/profile/users\" data-bs-"
-"original-title=\"\" title=\"\" target=\"_blank\">Meet our community members</"
-"a>"
-msgstr ""
-"<a class=\"mb-2 o_translate_inline\" t-attf-href=\"/profile/users\" data-bs-"
-"original-title=\"\" title=\"\" target=\"_blank\">コミュニティメンバー紹介</a>"
 
 #. module: website_forum
 #: model_terms:ir.ui.view,arch_db:website_forum.post_display
@@ -661,6 +641,13 @@ msgid "<i class=\"oi oi-arrow-right d-inline-block\"/> Go to Forums"
 msgstr "<i class=\"oi oi-arrow-right d-inline-block\"/> フォーラムへ移動"
 
 #. module: website_forum
+#: model_terms:ir.ui.view,arch_db:website_forum.404
+msgid ""
+"<i class=\"oi oi-arrow-right display-inline-block\"/> Return to questions "
+"list"
+msgstr ""
+
+#. module: website_forum
 #: model_terms:ir.ui.view,arch_db:website_forum.post_dropdown
 msgid ""
 "<i class=\"oi oi-ellipsis-h\" data-bs-toggle=\"tooltip\" data-bs-"
@@ -875,7 +862,7 @@ msgstr "要アクション"
 #: model:ir.model.fields,field_description:website_forum.field_forum_post__active
 #: model:ir.model.fields.selection,name:website_forum.selection__forum_post__state__active
 msgid "Active"
-msgstr "アクティブ"
+msgstr "有効"
 
 #. module: website_forum
 #: model_terms:ir.ui.view,arch_db:website_forum.user_profile_content
@@ -2447,6 +2434,11 @@ msgstr "攻撃的とマーク"
 #: model_terms:ir.ui.view,arch_db:website_forum.moderation_queue
 msgid "Mark as spam"
 msgstr "スパムとしてマークする"
+
+#. module: website_forum
+#: model_terms:ir.ui.view,arch_db:website_forum.forum_all_oe_structure_forum_all_top
+msgid "Meet our community members"
+msgstr ""
 
 #. module: website_forum
 #: model:ir.model.fields,field_description:website_forum.field_forum_forum__message_has_error
@@ -4294,6 +4286,23 @@ msgstr "あなたの伝記はツールチップとして見ることができま
 #: model_terms:ir.ui.view,arch_db:website_forum.follow
 msgid "your email..."
 msgstr "あなたのメールアドレス..."
+
+#~ msgid ""
+#~ "<a class=\"btn-link o_translate_inline\" t-attf-href=\"/forum\"><i "
+#~ "class=\"oi oi-arrow-right display-inline-block\"/> Return to questions "
+#~ "list</a>"
+#~ msgstr ""
+#~ "<a class=\"btn-link o_translate_inline\" t-attf-href=\"/forum\"><i "
+#~ "class=\"oi oi-arrow-right display-inline-block\"/> 質問リストに戻る</a>"
+
+#~ msgid ""
+#~ "<a class=\"mb-2 o_translate_inline\" t-attf-href=\"/profile/users\" data-"
+#~ "bs-original-title=\"\" title=\"\" target=\"_blank\">Meet our community "
+#~ "members</a>"
+#~ msgstr ""
+#~ "<a class=\"mb-2 o_translate_inline\" t-attf-href=\"/profile/users\" data-"
+#~ "bs-original-title=\"\" title=\"\" target=\"_blank\">コミュニティメンバー紹"
+#~ "介</a>"
 
 #~ msgid "%d karma required to unlink a comment."
 #~ msgstr "コメントのリンクを解除するには、%dカルマが必要です。"
