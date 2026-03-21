@@ -134,7 +134,10 @@ odoo/addons/base/maintenance/
 /odoo.conf
 /config/docker.conf
 /config/odoo.conf
+/config/Local.conf
+/config/Production.conf
 docker-compose.override.yml
+docker-compose.local.yml
 
 # ============================================
 # Platform-Specific

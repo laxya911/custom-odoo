@@ -14,11 +14,7 @@ on:
   push:
     branches:
       - main
-      - 19.0 
-      - develop
       - feature/odoo-uber
-      - 'testing/**'
-      - 'release/**'
     paths-ignore:
       - '**.md'
       - 'doc/**'
