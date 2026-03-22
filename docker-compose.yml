@@ -97,7 +97,7 @@ services:
     restart: unless-stopped
 
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
+      #POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
@@ -136,27 +136,16 @@ services:
       - traefik
 
     environment:
-      HOST: db
-      USER: ${POSTGRES_USER}
-      PASSWORD: ${POSTGRES_PASSWORD}
-      PORT: 5432
-      DB_NAME: ${POSTGRES_DB}
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGPORT: 5432
+      # Let Odoo handle database creation/naming if DB_NAME is omitted
+      # DB_NAME: ${POSTGRES_DB}
       WORKERS: 2
       LOG_LEVEL: ${LOG_LEVEL}
-      ADMIN_PASSWD: ${ODOO_ADMIN_PASSWD}
-
-      # -------------------------------------------------------
-      # Uber configuration
-      # -------------------------------------------------------
-      # UBER_ENVIRONMENT: ${UBER_ENVIRONMENT}
-      # UBER_CLIENT_ID: ${UBER_CLIENT_ID}
-      # UBER_CLIENT_SECRET: ${UBER_CLIENT_SECRET}
-      # UBER_SCOPES: ${UBER_SCOPES}
-      # UBER_AUTH_URL: ${UBER_AUTH_URL}
-      # UBER_API_BASE_URL: ${UBER_API_BASE_URL}
-      # UBER_WEBHOOK_BASIC_USER: ${UBER_WEBHOOK_BASIC_USER}
-      # UBER_WEBHOOK_BASIC_PASSWORD: ${UBER_WEBHOOK_BASIC_PASSWORD}
-
+      #ADMIN_PASSWD: ${ODOO_ADMIN_PASSWD}
+  
     labels:
       # -------------------------------------------------------
       # Enable Traefik for this container
@@ -175,6 +164,15 @@ services:
       - "traefik.http.routers.odoo-https.middlewares=odoo-headers,odoo-proxy-headers"
 
       # -------------------------------------------------------
+      # WebSocket Router (8072) - Must run on websecure (443)
+      # -------------------------------------------------------
+      - "traefik.http.routers.odoo-ws.rule=Host(`demo.primetek.in`) && PathPrefix(`/websocket`)"
+      - "traefik.http.routers.odoo-ws.entrypoints=websecure"
+      - "traefik.http.routers.odoo-ws.tls=true"
+      - "traefik.http.routers.odoo-ws.tls.certresolver=le"
+      - "traefik.http.routers.odoo-ws.service=odoo-longpolling"
+
+      # -------------------------------------------------------
       # HTTP Router (80) — IP & fallback
       # http://SERVER_IP
       # http://demo.primetek.in (also used for ACME)
@@ -186,9 +184,9 @@ services:
 
       # -------------------------------------------------------
       # Odoo service definition (HTTP only on 8069)
-      # Port 8072 is for websocket/longpolling, separate entrypoint
       # -------------------------------------------------------
       - "traefik.http.services.odoo.loadbalancer.server.port=8069"
+      - "traefik.http.services.odoo-longpolling.loadbalancer.server.port=8072"
 
       # -------------------------------------------------------
       # Proxy Headers Middleware (Critical for reverse proxy)
@@ -204,6 +202,7 @@ services:
       # -------------------------------------------------------
       - "traefik.http.middlewares.odoo-headers.headers.customresponseheaders.X-Frame-Options=SAMEORIGIN"
       - "traefik.http.middlewares.odoo-headers.headers.customresponseheaders.X-Content-Type-Options=nosniff"
+      - "traefik.http.middlewares.odoo-headers.headers.contentSecurityPolicy=frame-ancestors 'self' demo.primetek.in; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com;"
 
     expose:
       - "8069"
@@ -212,7 +211,7 @@ services:
     volumes:
       - odoo-data:/var/lib/odoo
       - odoo-sessions:/tmp/odoo-sessions
-      - ./odoo-extra-addons:/mnt/extra-addons
+      - ./config:/etc/odoo:ro
 
 
     command:

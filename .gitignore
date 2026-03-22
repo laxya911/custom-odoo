@@ -132,6 +132,8 @@ odoo/addons/base/maintenance/
 # Local Configuration (sensitive)
 # ============================================
 docker-compose.local.yml
+*/docker-compose.yml
+*/docker-compose.local.yml
 /config/
 # ============================================
 # Platform-Specific

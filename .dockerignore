@@ -67,7 +67,6 @@ install/win32/
 debian/
 
 # Configuration (will be mounted via volumes)
-config/
 odoo.conf
 docker-compose*.yml
 .env*
