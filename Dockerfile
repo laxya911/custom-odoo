@@ -94,9 +94,6 @@ COPY --chown=odoo:odoo addons ./addons
 # Copy custom addons to SEPARATE directory
 COPY --chown=odoo:odoo custom_addons ./custom_addons
 
-# Copy configuration directory
-COPY --chown=odoo:odoo config ./config
-
 # Copy setup configuration
 COPY --chown=odoo:odoo setup.py setup.cfg ./
 
@@ -114,7 +111,7 @@ ENV PATH="/opt/venv/bin:$PATH" \
     VIRTUAL_ENV="/opt/venv" \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    ODOO_RC=/opt/odoo/config/production.conf \
+    ODOO_RC=/etc/odoo/odoo.conf \
     ODOO_DATA_DIR=/var/lib/odoo \
     WERKZEUG_RUN_MAIN=true
 
