@@ -22,7 +22,7 @@ services:
       # Dashboard & API (secured, no public exposure)
       # -------------------------------------------------------
       - --api.dashboard=true
-      - --api.insecure=false
+      - --api.insecure=true
 
       # -------------------------------------------------------
       # Healthcheck ping
@@ -37,7 +37,6 @@ services:
       # -------------------------------------------------------
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
-      - --entrypoints.odoo-ws.address=:8072
 
       # -------------------------------------------------------
       # Docker provider
@@ -64,7 +63,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "8072:8072"
       # Dashboard exposed only locally
       - "127.0.0.1:8081:8080"
 
@@ -163,14 +161,6 @@ services:
       - "traefik.http.routers.odoo-https.service=odoo"
       - "traefik.http.routers.odoo-https.middlewares=odoo-headers,odoo-proxy-headers"
 
-      # -------------------------------------------------------
-      # WebSocket Router (8072) - Must run on websecure (443)
-      # -------------------------------------------------------
-      - "traefik.http.routers.odoo-ws.rule=Host(`demo.primetek.in`) && PathPrefix(`/websocket`)"
-      - "traefik.http.routers.odoo-ws.entrypoints=websecure"
-      - "traefik.http.routers.odoo-ws.tls=true"
-      - "traefik.http.routers.odoo-ws.tls.certresolver=le"
-      - "traefik.http.routers.odoo-ws.service=odoo-longpolling"
 
       # -------------------------------------------------------
       # HTTP Router (80) — IP & fallback
@@ -186,7 +176,6 @@ services:
       # Odoo service definition (HTTP only on 8069)
       # -------------------------------------------------------
       - "traefik.http.services.odoo.loadbalancer.server.port=8069"
-      - "traefik.http.services.odoo-longpolling.loadbalancer.server.port=8072"
 
       # -------------------------------------------------------
       # Proxy Headers Middleware (Critical for reverse proxy)

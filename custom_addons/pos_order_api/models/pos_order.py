@@ -329,12 +329,12 @@ class PosOrder(models.Model):
             'company_id': session.config_id.company_id.id,
             'unique_uuid': unique_uuid,
             'is_api_order': True,
-            'api_source': order_data.get('source', 'other'),
-            'api_customer_name': order_data.get('customer_name'),
-            'api_customer_phone': order_data.get('customer_phone'),
-            'api_delivery_address': order_data.get('delivery_address'),
-            'api_order_notes': order_data.get('notes'),
-            'general_customer_note': order_data.get('notes'),
+            'api_source': order_data.get('api_source') or order_data.get('source', 'other'),
+            'api_customer_name': order_data.get('api_customer_name') or order_data.get('customer_name'),
+            'api_customer_phone': order_data.get('api_customer_phone') or order_data.get('customer_phone'),
+            'api_delivery_address': order_data.get('api_delivery_address') or order_data.get('delivery_address'),
+            'api_order_notes': order_data.get('api_order_notes') or order_data.get('notes'),
+            'general_customer_note': order_data.get('api_order_notes') or order_data.get('notes'),
             'state': 'paid' if is_paid else 'draft',
             'to_invoice': to_invoice,
         }
@@ -393,11 +393,12 @@ class PosOrder(models.Model):
                 # After invoice creation, set the accounting payment method if we found one
                 if order.account_move and invoice_payment_method_id:
                     # 'payment_method_line_id' is the standard field in Odoo 17+ for inbound payments
-                    # but on account.move, it might be 'payment_reference' or handled by the reconciliation.
-                    # Image 4 shows a specific 'Payment Method' label under Accounting.
-                    # We try to write to the move if the field exists.
+                    # 'preferred_payment_method_line_id' is the custom field seen in user UI
                     try:
-                        order.account_move.write({'payment_method_line_id': invoice_payment_method_id})
+                        order.account_move.write({
+                            'payment_method_line_id': invoice_payment_method_id,
+                            'preferred_payment_method_line_id': invoice_payment_method_id
+                        })
                     except:
                         pass
 
