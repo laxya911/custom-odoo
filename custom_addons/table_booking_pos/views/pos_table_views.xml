@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_restaurant_table_form_inherit_booking" model="ir.ui.view">
+            <field name="name">restaurant.table.form.inherit.booking</field>
+            <field name="model">restaurant.table</field>
+            <field name="inherit_id" ref="pos_restaurant.view_restaurant_table_form"/>
+            <field name="arch" type="xml">
+                <field name="seats" position="after">
+                    <field name="table_resource_id" options="{'no_create': True}"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -191,7 +191,7 @@ services:
       # -------------------------------------------------------
       - "traefik.http.middlewares.odoo-headers.headers.customresponseheaders.X-Frame-Options=SAMEORIGIN"
       - "traefik.http.middlewares.odoo-headers.headers.customresponseheaders.X-Content-Type-Options=nosniff"
-      - "traefik.http.middlewares.odoo-headers.headers.contentSecurityPolicy=frame-ancestors 'self' demo.primetek.in; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com;"
+      - "traefik.http.middlewares.odoo-headers.headers.contentSecurityPolicy=frame-ancestors 'self' demo.primetek.in; script-src 'self' 'unsafe-inline' 'unsafe-eval';"
 
     expose:
       - "8069"
