@@ -24,6 +24,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zlib1g-dev \
     libxml2-dev \
     libxslt1-dev \
+    libcairo2-dev \
+    pkg-config \
+    libfreetype6-dev \
     git \
     && rm -rf /var/lib/apt/lists/*
 
@@ -37,8 +40,8 @@ COPY requirements.txt /tmp/
 
 # Install Python packages with no cache
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r /tmp/requirements.txt
-
+    pip install --no-cache-dir -r /tmp/requirements.txt && \
+    pip install --no-cache-dir rlPyCairo
 # -----------------------------------------------------------------------------
 # Stage 2: Production - Minimal runtime image
 # -----------------------------------------------------------------------------
@@ -72,6 +75,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wkhtmltopdf \
     xfonts-75dpi \
     xfonts-base \
+    libcairo2 \
+    libfreetype6 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
