@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_table_booking_form" model="ir.ui.view">
+            <field name="name">table.booking.form</field>
+            <field name="model">table.booking</field>
+            <field name="arch" type="xml">
+                <form string="Table Booking" class="o_booking_form">
+                    <header>
+                        <button name="action_check_in" string="Check In" type="object" class="oe_highlight" invisible="status != 'confirmed'"/>
+                        <button name="action_no_show" string="No Show" type="object" invisible="status != 'confirmed'"/>
+                        <button name="action_cancel" string="Cancel" type="object" invisible="status in ['cancelled', 'no_show', 'completed']"/>
+                        <field name="status" widget="statusbar" statusbar_visible="draft,confirmed,checked_in,completed"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                        <group name="top_group">
+                            <group name="customer_details" string="Customer Details">
+                                <field name="customer_id" options="{'no_create': True}"/>
+                                <field name="customer_name"/>
+                                <field name="customer_phone"/>
+                                <field name="customer_email"/>
+                            </group>
+                            <group name="booking_details" string="Booking Details">
+                                <field name="config_id"/>
+                                <field name="start_time"/>
+                                <field name="end_time"/>
+                                <field name="party_size"/>
+                                <field name="resource_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            </group>
+                        </group>
+                        <group name="bottom_group">
+                            <group name="payment_details" string="Payment &amp; Tokens">
+                                <field name="payment_state"/>
+                                <field name="cancel_token" readonly="1" groups="base.group_no_one"/>
+                            </group>
+                            <group name="notes_details" string="Notes">
+                                <field name="booking_notes" placeholder="Add any special requests..."/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_table_booking_tree" model="ir.ui.view">
+            <field name="name">table.booking.tree</field>
+            <field name="model">table.booking</field>
+            <field name="arch" type="xml">
+                <list decoration-info="status == 'confirmed'" decoration-success="status == 'checked_in'" decoration-muted="status == 'cancelled'">
+                    <field name="name"/>
+                    <field name="customer_name"/>
+                    <field name="start_time"/>
+                    <field name="resource_ids" widget="many2many_tags"/>
+                    <field name="table_names" optional="show"/>
+                    <field name="party_size"/>
+                    <field name="status" widget="badge" decoration-info="status == 'confirmed'" decoration-success="status == 'checked_in'"/>
+                    <field name="payment_state" widget="badge" optional="hide"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_table_booking_calendar" model="ir.ui.view">
+            <field name="name">table.booking.calendar</field>
+            <field name="model">table.booking</field>
+            <field name="arch" type="xml">
+                <calendar string="Table Bookings" date_start="start_time" date_stop="end_time" color="status">
+                    <field name="customer_name"/>
+                    <field name="party_size"/>
+                </calendar>
+            </field>
+        </record>
+
+        <record id="action_table_booking" model="ir.actions.act_window">
+            <field name="name">Table Bookings</field>
+            <field name="res_model">table.booking</field>
+            <field name="view_mode">list,calendar,form</field>
+            <field name="view_id" ref="view_table_booking_tree"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Register a new table booking!
+                </p>
+            </field>
+        </record>
+
+        <record id="action_table_booking_view_form" model="ir.actions.act_window.view">
+            <field name="sequence" eval="3"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_table_booking_form"/>
+            <field name="act_window_id" ref="action_table_booking"/>
+        </record>
+
+        <record id="action_table_booking_view_list" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">list</field>
+            <field name="view_id" ref="view_table_booking_tree"/>
+            <field name="act_window_id" ref="action_table_booking"/>
+        </record>
+    </data>
+</odoo>

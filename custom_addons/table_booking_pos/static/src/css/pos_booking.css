@@ -1,0 +1,22 @@
+/* POS Booking Table Visuals */
+.floor-table.booked-confirmed {
+    background-color: #FFC107 !important; /* Amber */
+    color: #000 !important;
+    border: 3px solid #FF9800 !important;
+}
+
+.floor-table.booked-checked-in {
+    background-color: #4CAF50 !important; /* Green */
+    color: #fff !important;
+    border: 3px solid #2E7D32 !important;
+}
+
+/* Ensure table numbers remain visible and centered */
+.floor-table .label {
+    z-index: 10;
+    pointer-events: none;
+}
+
+.booking-indicators {
+    pointer-events: none;
+}
