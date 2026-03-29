@@ -41,7 +41,7 @@ jobs:
   # ===========================================================================
   build-and-push:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/feature/odoo-uber'
+    if: github.ref == 'refs/heads/feature/odoo-uber' || github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
@@ -271,6 +271,7 @@ jobs:
   # Job 4: Deploy to VPS (triggered on main branch push)
   # ===========================================================================
   deploy-to-vps:
+    needs: build-and-push
     runs-on: ubuntu-latest
     if: |
       github.ref == 'refs/heads/main' &&

@@ -15,6 +15,7 @@
         'views/table_booking_config_views.xml',
         'views/table_resource_views.xml',
         'views/table_booking_views.xml',
+        'views/table_booking_search_views.xml',
         'views/menu_items.xml',
     ],
     'installable': True,

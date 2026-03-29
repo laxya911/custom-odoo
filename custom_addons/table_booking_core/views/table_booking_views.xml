@@ -65,6 +65,7 @@
             </field>
         </record>
 
+
         <record id="view_table_booking_calendar" model="ir.ui.view">
             <field name="name">table.booking.calendar</field>
             <field name="model">table.booking</field>
@@ -81,6 +82,7 @@
             <field name="res_model">table.booking</field>
             <field name="view_mode">list,calendar,form</field>
             <field name="view_id" ref="view_table_booking_tree"/>
+            <field name="context">{'search_default_upcoming': 1}</field>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
                     Register a new table booking!

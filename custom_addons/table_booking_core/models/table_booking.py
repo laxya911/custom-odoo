@@ -120,8 +120,6 @@ class TableBooking(models.Model):
         if config.service_period_ids:
             for p in config.service_period_ids:
                 periods.append((p.opening_time, p.closing_time))
-        else:
-            periods.append((config.opening_time, config.closing_time))
 
         slot_duration = config.slot_duration_minutes
         slot_interval = config.slot_interval_minutes
@@ -208,8 +206,8 @@ class TableBooking(models.Model):
             config = self.env['table.booking.config'].sudo().browse(int(config_id))
             customer_email = customer_data.get('email')
             
-            # Timezone handling (Restaurant Time) - Default to Company TZ
-            tz_name = config.pos_config_id.company_id.partner_id.tz or 'UTC'
+            # Timezone handling (Restaurant Time) - Default to Company TZ or Admin User TZ
+            tz_name = self.env.user.tz or config.pos_config_id.company_id.partner_id.tz or 'UTC'
             local_tz = pytz.timezone(tz_name)
             
             def to_utc(dt_str):
@@ -313,11 +311,16 @@ class TableBooking(models.Model):
         
         booking_data = []
         for b in bookings:
+            # Send exactly in restaurant local time to avoid timezone shifts on the frontend
+            tz_name = self.env.user.tz or b.config_id.pos_config_id.company_id.partner_id.tz or 'UTC'
+            local_tz = pytz.timezone(tz_name)
+            local_dt = pytz.UTC.localize(b.start_time).astimezone(local_tz)
+            
             booking_data.append({
                 'id': b.id,
                 'name': b.name,
                 'status': b.status,
-                'start_time': fields.Datetime.to_string(b.start_time),
+                'start_time': local_dt.strftime('%Y-%m-%d %H:%M:%S'),
                 'party_size': b.party_size,
                 'tables': [t.name for t in b.resource_ids],
                 'cancel_token': b.cancel_token if b.status in ['draft', 'confirmed'] else False,
