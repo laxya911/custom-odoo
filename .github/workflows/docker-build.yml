@@ -96,7 +96,15 @@ jobs:
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
 
       # -----------------------------------------------------------------------
-      # Step 5: Build and push Docker image
+      # Step 5: Prune any cached layers to guarantee a fresh build
+      # -----------------------------------------------------------------------
+      - name: Prune Docker BuildKit cache
+        run: |
+          docker builder prune -af --keep-storage=0 2>/dev/null || true
+          echo "✅ BuildKit cache cleared"
+
+      # -----------------------------------------------------------------------
+      # Step 6: Build and push Docker image (zero-cache)
       # -----------------------------------------------------------------------
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -106,8 +114,11 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # Force clean build to prevent duplicate module issues from stale cache
+          # Force clean build — no cached layers whatsoever
           no-cache: true
+          # Explicitly disable any remote/registry cache
+          cache-from: ""
+          cache-to: ""
           # Build arguments for image metadata
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
