@@ -22,7 +22,7 @@ services:
       # Dashboard & API (secured, no public exposure)
       # -------------------------------------------------------
       - --api.dashboard=true
-      - --api.insecure=false
+      - --api.insecure=true
 
       # -------------------------------------------------------
       # Healthcheck ping
@@ -37,7 +37,6 @@ services:
       # -------------------------------------------------------
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
-      - --entrypoints.odoo-ws.address=:8072
 
       # -------------------------------------------------------
       # Docker provider
@@ -64,7 +63,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "8072:8072"
       # Dashboard exposed only locally
       - "127.0.0.1:8081:8080"
 
@@ -97,7 +95,7 @@ services:
     restart: unless-stopped
 
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
+      #POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
@@ -136,27 +134,16 @@ services:
       - traefik
 
     environment:
-      HOST: db
-      USER: ${POSTGRES_USER}
-      PASSWORD: ${POSTGRES_PASSWORD}
-      PORT: 5432
-      DB_NAME: ${POSTGRES_DB}
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGPORT: 5432
+      # Let Odoo handle database creation/naming if DB_NAME is omitted
+      # DB_NAME: ${POSTGRES_DB}
       WORKERS: 2
       LOG_LEVEL: ${LOG_LEVEL}
-      ADMIN_PASSWD: ${ODOO_ADMIN_PASSWD}
-
-      # -------------------------------------------------------
-      # Uber configuration
-      # -------------------------------------------------------
-      # UBER_ENVIRONMENT: ${UBER_ENVIRONMENT}
-      # UBER_CLIENT_ID: ${UBER_CLIENT_ID}
-      # UBER_CLIENT_SECRET: ${UBER_CLIENT_SECRET}
-      # UBER_SCOPES: ${UBER_SCOPES}
-      # UBER_AUTH_URL: ${UBER_AUTH_URL}
-      # UBER_API_BASE_URL: ${UBER_API_BASE_URL}
-      # UBER_WEBHOOK_BASIC_USER: ${UBER_WEBHOOK_BASIC_USER}
-      # UBER_WEBHOOK_BASIC_PASSWORD: ${UBER_WEBHOOK_BASIC_PASSWORD}
-
+      #ADMIN_PASSWD: ${ODOO_ADMIN_PASSWD}
+  
     labels:
       # -------------------------------------------------------
       # Enable Traefik for this container
@@ -174,6 +161,7 @@ services:
       - "traefik.http.routers.odoo-https.service=odoo"
       - "traefik.http.routers.odoo-https.middlewares=odoo-headers,odoo-proxy-headers"
 
+
       # -------------------------------------------------------
       # HTTP Router (80) — IP & fallback
       # http://SERVER_IP
@@ -186,7 +174,6 @@ services:
 
       # -------------------------------------------------------
       # Odoo service definition (HTTP only on 8069)
-      # Port 8072 is for websocket/longpolling, separate entrypoint
       # -------------------------------------------------------
       - "traefik.http.services.odoo.loadbalancer.server.port=8069"
 
@@ -204,6 +191,7 @@ services:
       # -------------------------------------------------------
       - "traefik.http.middlewares.odoo-headers.headers.customresponseheaders.X-Frame-Options=SAMEORIGIN"
       - "traefik.http.middlewares.odoo-headers.headers.customresponseheaders.X-Content-Type-Options=nosniff"
+      - "traefik.http.middlewares.odoo-headers.headers.contentSecurityPolicy=frame-ancestors 'self' demo.primetek.in; script-src 'self' 'unsafe-inline' 'unsafe-eval';"
 
     expose:
       - "8069"
@@ -212,7 +200,7 @@ services:
     volumes:
       - odoo-data:/var/lib/odoo
       - odoo-sessions:/tmp/odoo-sessions
-      - ./odoo-extra-addons:/mnt/extra-addons
+      - ./config:/etc/odoo:ro
 
 
     command:

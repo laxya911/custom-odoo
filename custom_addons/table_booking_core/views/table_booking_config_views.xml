@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_table_booking_config_form" model="ir.ui.view">
+            <field name="name">table.booking.config.form</field>
+            <field name="model">table.booking.config</field>
+            <field name="arch" type="xml">
+                <form string="Booking Configuration">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="active_booking"/>
+                                <field name="pos_config_id"/>
+                            </group>
+                            <group>
+                                <field name="slot_duration_minutes"/>
+                                <field name="slot_interval_minutes"/>
+                            </group>
+                        </group>
+                        <group string="Timing &amp; Rules">
+                            <group>
+                                <label for="opening_time" string="Operating Periods"/>
+                                <div className="o_row">
+                                    <field name="opening_time" widget="float_time" class="oe_inline"/>
+                                    <span> to </span>
+                                    <field name="closing_time" widget="float_time" class="oe_inline"/>
+                                    <span class="text-muted">(Default fallback)</span>
+                                </div>
+                                <field name="service_period_ids">
+                                    <list editable="bottom">
+                                        <field name="name"/>
+                                        <field name="opening_time" widget="float_time"/>
+                                        <field name="closing_time" widget="float_time"/>
+                                    </list>
+                                </field>
+                                <field name="max_party_size"/>
+                            </group>
+                            <group>
+                                <field name="cancel_hours_before"/>
+                                <field name="allow_self_cancel"/>
+                                <field name="allow_table_combine"/>
+                            </group>
+                        </group>
+                        <group string="Payment Settings">
+                            <field name="require_prepayment"/>
+                            <field name="deposit_percentage" invisible="not require_prepayment"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_table_booking_config_tree" model="ir.ui.view">
+            <field name="name">table.booking.config.tree</field>
+            <field name="model">table.booking.config</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="active_booking"/>
+                    <field name="pos_config_id"/>
+                    <field name="slot_duration_minutes"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="action_table_booking_config" model="ir.actions.act_window">
+            <field name="name">Booking Configuration</field>
+            <field name="res_model">table.booking.config</field>
+            <field name="view_mode">list,form</field>
+        </record>
+    </data>
+</odoo>
