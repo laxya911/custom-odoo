@@ -121,6 +121,55 @@ class TestSaleSections(SaleCommon):
         self.assertEqual(subsection_summary_lines[0]['price_subtotal'], 600.00)
         self.assertEqual(subsection_summary_lines[1]['price_subtotal'], 100.00)
 
+    def test_sale_order_report_line_visibility_and_grouping_with_combo(self):
+        """
+        Verify that collapsed sections correctly aggregate on tax groups without splitting lines
+        for untaxed zero-price items such as combo items.
+        """
+        product_a = self._create_product(name="Beefy burger")
+        product_b = self._create_product(name="Belgian fries")
+        combos = self.env['product.combo'].create([{
+            'name': "Burger",
+            'combo_item_ids': [Command.create({'product_id': product_a.id})],
+        }, {
+            'name': "Side",
+            'combo_item_ids': [Command.create({'product_id': product_b.id})],
+        }])
+        product_combo = self._create_product(
+            name="Meal Menu",
+            list_price=10.0,
+            type='combo',
+            combo_ids=[Command.set(combos.ids)],
+        )
+        self.sections_sale_order.order_line = [
+            Command.clear(),
+            Command.create({
+                'name': 'Sec1',
+                'display_type': 'line_section',
+                'collapse_composition': True,
+            }),
+            Command.create({'product_id': product_combo.id}),
+        ]
+        combo_line = self.sections_sale_order.order_line[1]
+        self.sections_sale_order.order_line = [
+            Command.create({
+                'product_id': product_a.id,
+                'combo_item_id': combos[0].combo_item_ids.id,
+                'linked_line_id': combo_line.id,
+            }),
+             Command.create({
+                'product_id': product_b.id,
+                'combo_item_id': combos[1].combo_item_ids.id,
+                'linked_line_id': combo_line.id,
+            }),
+        ]
+
+        lines_to_report = self.sections_sale_order._get_order_lines_to_report()
+
+        subsection_summary_lines = lines_to_report[0]._get_grouped_section_summary()
+        self.assertEqual(len(subsection_summary_lines), 1)
+        self.assertEqual(subsection_summary_lines[0]['price_subtotal'], 10.00)
+
     def test_sale_order_sections_totals(self):
         """Ensure section totals are computed correctly.
 
@@ -139,4 +188,31 @@ class TestSaleSections(SaleCommon):
         self.assertEqual(
             self.sections_sale_order.order_line[7]._get_section_totals('price_subtotal'),
             sum(self.sections_sale_order.order_line[8:].mapped('price_subtotal')),
+        )
+
+    def test_optional_section_discount_line_not_editable_on_portal(self):
+        so = self.env["sale.order"].create({
+            "partner_id": self.partner.id,
+            "order_line": [
+                Command.create({
+                    "name": "Optional Section",
+                    "display_type": "line_section",
+                    "is_optional": True,
+                }),
+                Command.create({"product_id": self.product.id, "price_unit": 200}),
+            ],
+        })
+        wizard = self.env["sale.order.discount"].create({
+            "sale_order_id": so.id,
+            "discount_type": "so_discount",
+            "discount_percentage": 0.1,
+        })
+        wizard.action_apply_discount()
+        self.assertTrue(
+            so.order_line[1]._can_be_edited_on_portal(),
+            "Optional section line should be editable on portal",
+        )
+        self.assertFalse(
+            so.order_line[2]._can_be_edited_on_portal(),
+            "Discount line on optional section should not be editable on portal",
         )

@@ -112,70 +112,75 @@ class TableBooking(models.Model):
         if not config.active_booking:
             return []
 
-        # Convert date_str to datetime objects for opening/closing
         from datetime import datetime
         day_date = datetime.strptime(date_str, '%Y-%m-%d').date()
         
-        # Simple slot generation based on opening/closing Floats
-        # Note: In a real app, use better timezone handling
-        start_hour = int(config.opening_time)
-        start_min = int((config.opening_time - start_hour) * 60)
-        
-        end_hour = int(config.closing_time)
-        end_min = int((config.closing_time - end_hour) * 60)
-        
-        opening_dt = datetime.combine(day_date, datetime.min.time().replace(hour=start_hour, minute=start_min))
-        closing_dt = datetime.combine(day_date, datetime.min.time().replace(hour=end_hour, minute=end_min))
-        
+        # Determine operating periods
+        periods = []
+        if config.service_period_ids:
+            for p in config.service_period_ids:
+                periods.append((p.opening_time, p.closing_time))
+        else:
+            periods.append((config.opening_time, config.closing_time))
+
         slot_duration = config.slot_duration_minutes
         slot_interval = config.slot_interval_minutes
-        
-        available_slots = []
-        current_slot_start = opening_dt
-        
         all_tables = self.env['table.resource'].search([('active', '=', True)])
-        
-        while current_slot_start + timedelta(minutes=slot_duration) <= closing_dt:
-            slot_end = current_slot_start + timedelta(minutes=slot_duration)
+        available_slots = []
+
+        for open_float, close_float in periods:
+            start_hour = int(open_float)
+            start_min = int((open_float - start_hour) * 60)
             
-            # Find overlapping bookings
-            overlapping_bookings = self.search([
-                ('status', 'in', ['confirmed', 'checked_in']),
-                ('start_time', '<', slot_end),
-                ('end_time', '>', current_slot_start)
-            ])
+            # Handle 24h case if close_float is 0 or 24
+            end_hour = int(close_float) if close_float < 24 else 23
+            end_min = int((close_float - int(close_float)) * 60) if close_float < 24 else 59
             
-            reserved_table_ids = overlapping_bookings.mapped('resource_ids').ids
-            free_tables = all_tables.filtered(lambda t: t.id not in reserved_table_ids)
+            opening_dt = datetime.combine(day_date, datetime.min.time().replace(hour=start_hour, minute=start_min))
+            closing_dt = datetime.combine(day_date, datetime.min.time().replace(hour=end_hour, minute=end_min))
+            if close_float < open_float:
+                closing_dt += timedelta(days=1)
             
-            # Best fit logic
-            assigned_tables = self.env['table.resource']
-            for t in free_tables.sorted('capacity'):
-                if t.capacity >= party_size:
-                    assigned_tables = t
-                    break
-            
-            if not assigned_tables and config.allow_table_combine:
-                # Try to combine tables if no single table is large enough
-                combined_capacity = 0
-                for t in free_tables.filtered('is_combinable').sorted('capacity', reverse=True):
-                    combined_capacity += t.capacity
-                    assigned_tables += t
-                    if combined_capacity >= party_size:
+            current_slot_start = opening_dt
+            while current_slot_start + timedelta(minutes=slot_duration) <= closing_dt:
+                slot_end = current_slot_start + timedelta(minutes=slot_duration)
+                
+                # Find overlapping bookings
+                overlapping_bookings = self.search([
+                    ('status', 'in', ['confirmed', 'checked_in']),
+                    ('start_time', '<', slot_end),
+                    ('end_time', '>', current_slot_start)
+                ])
+                
+                reserved_table_ids = overlapping_bookings.mapped('resource_ids').ids
+                free_tables = all_tables.filtered(lambda t: t.id not in reserved_table_ids)
+                
+                # Best fit logic
+                assigned_tables = self.env['table.resource']
+                for t in free_tables.sorted('capacity'):
+                    if t.capacity >= party_size:
+                        assigned_tables = t
                         break
                 
-                if combined_capacity < party_size:
-                    assigned_tables = self.env['table.resource'] # clear it because combination failed
+                if not assigned_tables and config.allow_table_combine:
+                    combined_capacity = 0
+                    for t in free_tables.filtered('is_combinable').sorted('capacity', reverse=True):
+                        combined_capacity += t.capacity
+                        assigned_tables += t
+                        if combined_capacity >= party_size:
+                            break
+                    if combined_capacity < party_size:
+                        assigned_tables = self.env['table.resource']
 
-            if assigned_tables:
-                available_slots.append({
-                    'time': current_slot_start.strftime('%H:%M'),
-                    'start_time': fields.Datetime.to_string(current_slot_start),
-                    'end_time': fields.Datetime.to_string(slot_end),
-                    'tables': [{'id': t.id, 'name': t.name} for t in assigned_tables]
-                })
-            
-            current_slot_start += timedelta(minutes=slot_interval)
+                if assigned_tables:
+                    available_slots.append({
+                        'time': current_slot_start.strftime('%H:%M'),
+                        'start_time': fields.Datetime.to_string(current_slot_start),
+                        'end_time': fields.Datetime.to_string(slot_end),
+                        'tables': [{'id': t.id, 'name': t.name} for t in assigned_tables]
+                    })
+                
+                current_slot_start += timedelta(minutes=slot_interval)
             
         return available_slots
 
@@ -198,9 +203,23 @@ class TableBooking(models.Model):
         config_id = kwargs.get('config_id')
         if not customer_data.get('name') or not slot_data.get('start_time') or not config_id:
             return {'status': 'error', 'message': 'Missing required booking data'}
+            
         try:
+            config = self.env['table.booking.config'].sudo().browse(int(config_id))
             customer_email = customer_data.get('email')
-            # 1. Partner Linking
+            
+            # Timezone handling (Restaurant Time) - Default to Company TZ
+            tz_name = config.pos_config_id.company_id.partner_id.tz or 'UTC'
+            local_tz = pytz.timezone(tz_name)
+            
+            def to_utc(dt_str):
+                local_dt = local_tz.localize(datetime.strptime(dt_str, '%Y-%m-%d %H:%M:%S'))
+                return fields.Datetime.to_string(local_dt.astimezone(pytz.UTC))
+
+            utc_start = to_utc(slot_data['start_time'])
+            utc_end = to_utc(slot_data['end_time'])
+
+            # 1. Partner Resolution
             partner = self.env['res.partner'].sudo().search([('email', '=', customer_email)], limit=1)
             if not partner:
                 partner = self.env['res.partner'].sudo().create({
@@ -211,36 +230,37 @@ class TableBooking(models.Model):
             elif not partner.phone and customer_data.get('phone'):
                 partner.sudo().write({'phone': customer_data['phone']})
 
-            # 2. Overlap check
-            overlapping = self.sudo().search([
+            # 2. Double Booking Check (Customer already has a booking at this time)
+            existing = self.sudo().search([
+                ('customer_id', '=', partner.id),
                 ('status', 'in', ['confirmed', 'checked_in']),
-                ('start_time', '<', slot_data['end_time']),
-                ('end_time', '>', slot_data['start_time']),
-                ('resource_ids', 'in', [t['id'] for t in slot_data['tables']])
-            ])
-            if overlapping:
-                return {'status': 'error', 'message': 'Selected table was just booked.'}
-            
-            # 3. Timezone conversion (Local -> UTC)
-            # Find timezone from config
-            config = self.env['table.booking.config'].sudo().browse(int(config_id))
-            tz_name = config.pos_config_id.company_id.partner_id.tz or 'Asia/Kolkata' # Default to IST if not set
-            local_tz = pytz.timezone(tz_name)
-            
-            def to_utc(dt_str):
-                local_dt = local_tz.localize(datetime.strptime(dt_str, '%Y-%m-%d %H:%M:%S'))
-                return fields.Datetime.to_string(local_dt.astimezone(pytz.UTC))
+                ('start_time', '=', utc_start)
+            ], limit=1)
+            if existing:
+                return {'status': 'error', 'message': _('You already have a booking for this time.')}
+
+            # 3. Overlap check (Table already booked)
+            table_ids = [t['id'] for t in slot_data.get('tables', [])]
+            if table_ids:
+                overlapping = self.sudo().search([
+                    ('status', 'in', ['confirmed', 'checked_in']),
+                    ('start_time', '<', utc_end),
+                    ('end_time', '>', utc_start),
+                    ('resource_ids', 'in', table_ids)
+                ])
+                if overlapping:
+                    return {'status': 'error', 'message': _('Selected table was just booked by someone else.')}
 
             vals = {
-                'config_id': int(config_id),
+                'config_id': config.id,
                 'customer_id': partner.id,
                 'customer_name': customer_data['name'],
                 'customer_phone': customer_data['phone'],
                 'customer_email': customer_email,
                 'party_size': int(kwargs.get('party_size', 1)),
-                'start_time': to_utc(slot_data['start_time']),
-                'end_time': to_utc(slot_data['end_time']),
-                'resource_ids': [(6, 0, [t['id'] for t in slot_data['tables']])],
+                'start_time': utc_start,
+                'end_time': utc_end,
+                'resource_ids': [(6, 0, table_ids)],
                 'status': 'confirmed',
                 'payment_state': 'paid' if kwargs.get('payment_token') else 'not_paid',
                 'booking_notes': customer_data.get('notes'),
@@ -248,6 +268,7 @@ class TableBooking(models.Model):
             booking = self.sudo().create(vals)
             return {'status': 'success', 'booking_ref': booking.name, 'cancel_token': booking.cancel_token}
         except Exception as e:
+            _logger.error("Booking Creation Failed: %s", str(e))
             return {'status': 'error', 'message': str(e)}
 
     @api.model
@@ -257,10 +278,10 @@ class TableBooking(models.Model):
         booking = self.sudo().search([('cancel_token', '=', token)], limit=1)
         if not booking: return {'status': 'error', 'message': 'Booking not found'}
         
-        from datetime import datetime
-        hours_to_start = (booking.start_time - datetime.now()).total_seconds() / 3600
+        # Check cancellation policy
+        hours_to_start = (booking.start_time - datetime.utcnow()).total_seconds() / 3600
         if hours_to_start < booking.config_id.cancel_hours_before:
-            return {'status': 'error', 'message': f'Cancel at least {booking.config_id.cancel_hours_before}h before.'}
+            return {'status': 'error', 'message': f'Cancellations must be made at least {booking.config_id.cancel_hours_before} hours in advance.'}
         
         booking.action_cancel()
         return {'status': 'success', 'message': 'Booking cancelled'}
@@ -283,10 +304,7 @@ class TableBooking(models.Model):
         if not email:
             return {'status': 'error', 'message': 'Email is required'}
         
-        # 1. Partner Resolution
         partner = self.env['res.partner'].sudo().search([('email', '=', email)], limit=1)
-        
-        # 2. Bookings (Direct email match + Partner match)
         booking_domain = [('customer_email', '=', email)]
         if partner:
             booking_domain = ['|'] + booking_domain + [('customer_id', '=', partner.id)]
@@ -306,7 +324,6 @@ class TableBooking(models.Model):
                 'config_name': b.config_id.name,
             })
             
-        # 3. POS Orders (Only if partner exists)
         order_data = []
         if partner:
             orders = self.env['pos.order'].sudo().search([

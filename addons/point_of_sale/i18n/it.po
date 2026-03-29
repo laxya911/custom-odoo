@@ -16,8 +16,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-22 18:35+0000\n"
-"PO-Revision-Date: 2026-01-23 07:33+0000\n"
+"POT-Creation-Date: 2026-03-06 18:36+0000\n"
+"PO-Revision-Date: 2026-02-25 14:47+0000\n"
 "Last-Translator: \"Marianna Ciofani (cima)\" <cima@odoo.com>\n"
 "Language-Team: Italian <https://translate.odoo.com/projects/odoo-19/"
 "point_of_sale/it/>\n"
@@ -731,8 +731,8 @@ msgstr "Azione richiesta"
 #. module: point_of_sale
 #. odoo-python
 #: code:addons/point_of_sale/models/pos_session.py:0
-msgid "Action cancelled (%s)"
-msgstr "Azione annullata (%s)"
+msgid "Action cancelled (%(ACTION)s)"
+msgstr ""
 
 #. module: point_of_sale
 #. odoo-javascript
@@ -1475,7 +1475,7 @@ msgstr "Scontrino base"
 #. odoo-javascript
 #: code:addons/point_of_sale/static/src/app/components/popups/sync_popup/sync_popup.xml:0
 msgid "Be aware that reloading data will delete unsaved orders."
-msgstr ""
+msgstr "Sappi che se ricarichi i dati gli ordini non salvati andranno persi."
 
 #. module: point_of_sale
 #: model:ir.model.fields,field_description:point_of_sale.field_pos_session__cash_register_difference
@@ -1792,7 +1792,7 @@ msgstr "Apertura di cassa"
 #. odoo-javascript
 #: code:addons/point_of_sale/static/src/app/components/popups/cash_move_popup/cash_move_popup.xml:0
 msgid "Cash Out"
-msgstr "Cash-Out"
+msgstr "Prelievo"
 
 #. module: point_of_sale
 #: model:ir.model.fields,field_description:point_of_sale.field_pos_config__cash_rounding
@@ -1837,8 +1837,8 @@ msgstr "Differenza di cassa rilevata durante il conteggio (utili) - chiusura"
 #. module: point_of_sale
 #. odoo-python
 #: code:addons/point_of_sale/models/pos_session.py:0
-msgid "Cash drawer opened (%s)"
-msgstr "Registratore di cassa aperto (%s)"
+msgid "Cash drawer opened (%(ACTION)s)"
+msgstr ""
 
 #. module: point_of_sale
 #. odoo-javascript
@@ -2032,6 +2032,13 @@ msgstr ""
 "Deve essere impostata su: local_printer"
 
 #. module: point_of_sale
+#. odoo-javascript
+#: code:addons/point_of_sale/static/src/app/services/pos_store.js:0
+#, fuzzy
+msgid "Checking Local Network Access permission..."
+msgstr "Verifica dell'autorizzazione di accesso alla rete locale..."
+
+#. module: point_of_sale
 #: model:product.template,name:point_of_sale.product_cheese_croissant_product_template
 msgid "Cheese Croissant"
 msgstr "Croissant al formaggio"
@@ -2219,8 +2226,26 @@ msgstr "Sessione di chiusura"
 #. module: point_of_sale
 #. odoo-python
 #: code:addons/point_of_sale/models/pos_session.py:0
+msgid "Closing counted: %s \n"
+msgstr ""
+
+#. module: point_of_sale
+#. odoo-python
+#: code:addons/point_of_sale/models/pos_session.py:0
 msgid "Closing difference in %(payment_method)s (%(session)s)"
 msgstr "Differenza chiusura in %(payment_method)s (%(session)s)"
+
+#. module: point_of_sale
+#. odoo-python
+#: code:addons/point_of_sale/models/pos_session.py:0
+msgid "Closing difference: %s \n"
+msgstr ""
+
+#. module: point_of_sale
+#. odoo-python
+#: code:addons/point_of_sale/models/pos_session.py:0
+msgid "Closing expected: %s \n"
+msgstr ""
 
 #. module: point_of_sale
 #. odoo-javascript
@@ -3985,6 +4010,12 @@ msgid "Hide Use Payment Terminal"
 msgstr "Nascondi usa un terminale di pagamento"
 
 #. module: point_of_sale
+#. odoo-javascript
+#: code:addons/point_of_sale/static/src/app/components/loader/critical_pos_error/critical_pos_error.xml:0
+msgid "Hide details"
+msgstr "Nascondi dettagli"
+
+#. module: point_of_sale
 #: model:ir.model.fields,help:point_of_sale.field_res_config_settings__group_pos_preset
 msgid "Hide or show the Presets menu in the Point of Sale configuration."
 msgstr ""
@@ -4572,6 +4603,12 @@ msgid "LED Lamp"
 msgstr "Lampada a LED"
 
 #. module: point_of_sale
+#. odoo-javascript
+#: code:addons/point_of_sale/static/src/app/components/navbar/navbar.js:0
+msgid "LNA Permission status"
+msgstr "Stato autorizzazione LNA"
+
+#. module: point_of_sale
 #: model:ir.model.fields,field_description:point_of_sale.field_pos_payment__name
 #: model:ir.model.fields,field_description:point_of_sale.field_pos_preset__name
 msgid "Label"
@@ -4838,15 +4875,23 @@ msgstr ""
 
 #. module: point_of_sale
 #. odoo-javascript
+#: code:addons/point_of_sale/static/src/app/components/navbar/navbar.xml:0
+msgid "Local Network Access"
+msgstr "Accesso alla rete locale"
+
+#. module: point_of_sale
+#. odoo-javascript
 #: code:addons/point_of_sale/static/src/app/utils/init_lna.js:0
 msgid ""
 "Local Network Access configuration is enabled, but your browser is not "
 "Chromium-based. Please use a Chromium-based browser to benefit from this "
-"feature."
+"feature. Please note that IOS devices do not support Local Network Access "
+"yet."
 msgstr ""
-"La configurazione dell'accesso alla rete locale è attiva ma il tuo browser "
-"non è basato su Chromium. Utilizza un browser basato su Chromium per "
-"beneficiare di questa funzionalità."
+"La configurazione dell'accesso alla rete locale è abilitata, ma il tuo "
+"browser non è basato su Chromium. Utilizza un browser basato su Chromium per "
+"usufruire di questa funzione. Nota che i dispositivi iOS non supportano "
+"ancora l'accesso alla rete locale."
 
 #. module: point_of_sale
 #. odoo-javascript
@@ -4861,6 +4906,18 @@ msgstr ""
 #. module: point_of_sale
 #. odoo-javascript
 #: code:addons/point_of_sale/static/src/app/utils/init_lna.js:0
+msgid "Local Network Access is not configured for this POS."
+msgstr "L'accesso alla rete locale non è configurato per questo Punto vendita."
+
+#. module: point_of_sale
+#. odoo-javascript
+#: code:addons/point_of_sale/static/src/app/utils/init_lna.js:0
+msgid "Local Network Access permission granted."
+msgstr "Autorizzazione di accesso alla rete locale concessa."
+
+#. module: point_of_sale
+#. odoo-javascript
+#: code:addons/point_of_sale/static/src/app/utils/init_lna.js:0
 msgid ""
 "Local Network Access permission is denied. Some hardware devices might not "
 "work properly. Please allow Local Network Access in your browser settings."
@@ -4868,6 +4925,18 @@ msgstr ""
 "Il permesso per l'accesso alla rete locale è stato negato. Alcuni "
 "dispositivi hardware non funzionano correttamente. Consenti l'accesso alla "
 "rete locale dalle impostazioni del browser."
+
+#. module: point_of_sale
+#. odoo-javascript
+#: code:addons/point_of_sale/static/src/app/utils/init_lna.js:0
+msgid ""
+"Local Network Access permission is not yet granted. Some hardware devices "
+"might not work properly. Please allow Local Network Access in your browser "
+"settings."
+msgstr ""
+"L'autorizzazione per l'accesso alla rete locale non è ancora stata concessa. "
+"Alcuni dispositivi hardware potrebbero non funzionare correttamente. "
+"Consenti l'accesso alla rete locale nelle impostazioni del browser."
 
 #. module: point_of_sale
 #: model_terms:ir.ui.view,arch_db:point_of_sale.pos_config_view_form
@@ -5452,6 +5521,8 @@ msgstr "Nessuno slot disponibile per questo giorno"
 #: code:addons/point_of_sale/wizard/pos_make_invoice.py:0
 msgid "No valid orders were selected. No new invoices could be generated"
 msgstr ""
+"Non sono stati selezionati ordini validi. Non è stato possibile generare "
+"nuove fatture"
 
 #. module: point_of_sale
 #: model:ir.model.fields,field_description:point_of_sale.field_res_config_settings__barcode_nomenclature_id
@@ -5691,6 +5762,12 @@ msgstr ""
 
 #. module: point_of_sale
 #. odoo-javascript
+#: code:addons/point_of_sale/static/src/app/components/loader/critical_pos_error/critical_pos_error.xml:0
+msgid "Oops!"
+msgstr "Ops!"
+
+#. module: point_of_sale
+#. odoo-javascript
 #: code:addons/point_of_sale/static/src/app/services/pos_store.js:0
 msgid "Oops.."
 msgstr "Oops.."
@@ -5784,6 +5861,24 @@ msgstr "Saldo iniziale sommato a tutte le transazioni di cassa."
 #: code:addons/point_of_sale/static/src/app/components/popups/opening_control_popup/opening_control_popup.xml:0
 msgid "Opening cash"
 msgstr "Cassa in apertura"
+
+#. module: point_of_sale
+#. odoo-python
+#: code:addons/point_of_sale/models/pos_session.py:0
+msgid "Opening cash counted: %s \n"
+msgstr ""
+
+#. module: point_of_sale
+#. odoo-python
+#: code:addons/point_of_sale/models/pos_session.py:0
+msgid "Opening cash difference: %s \n"
+msgstr ""
+
+#. module: point_of_sale
+#. odoo-python
+#: code:addons/point_of_sale/models/pos_session.py:0
+msgid "Opening cash expected: %s \n"
+msgstr ""
 
 #. module: point_of_sale
 #. odoo-python
@@ -7651,6 +7746,12 @@ msgstr ""
 
 #. module: point_of_sale
 #. odoo-javascript
+#: code:addons/point_of_sale/static/src/app/components/loader/critical_pos_error/critical_pos_error.xml:0
+msgid "Reload data"
+msgstr "Ricarica dati"
+
+#. module: point_of_sale
+#. odoo-javascript
 #: code:addons/point_of_sale/static/src/app/screens/payment_screen/payment_status/payment_status.js:0
 msgid "Remaining"
 msgstr "Rimanente"
@@ -8386,6 +8487,12 @@ msgid "Show category images in the Point of Sale interface."
 msgstr "Mostra immagini categoria nell'interfaccia del punto vendita."
 
 #. module: point_of_sale
+#. odoo-javascript
+#: code:addons/point_of_sale/static/src/app/components/loader/critical_pos_error/critical_pos_error.xml:0
+msgid "Show details"
+msgstr "Mostra dettagli"
+
+#. module: point_of_sale
 #: model:ir.model.fields,help:point_of_sale.field_pos_config__module_pos_hr
 #: model:ir.model.fields,help:point_of_sale.field_res_config_settings__pos_module_pos_hr
 msgid "Show employee login screen"
@@ -8497,6 +8604,16 @@ msgid "Some, if not all, post-processing after syncing order failed."
 msgstr ""
 "Alcune, se non tutte, le post-elaborazioni dopo l'ordine di sincronizzazione "
 "sono fallite."
+
+#. module: point_of_sale
+#. odoo-javascript
+#: code:addons/point_of_sale/static/src/app/components/loader/critical_pos_error/critical_pos_error.xml:0
+msgid ""
+"Something went wrong... If you really are stuck, share the report with your "
+"friendly support service"
+msgstr ""
+"Qualcosa è andato storto... Se sei davvero bloccato, condividi il resoconto "
+"con il supporto"
 
 #. module: point_of_sale
 #: model:product.template,name:point_of_sale.product_sourdough_loaf_product_template
@@ -9491,12 +9608,6 @@ msgstr ""
 #. module: point_of_sale
 #. odoo-javascript
 #: code:addons/point_of_sale/static/src/app/models/pos_order.js:0
-msgid "There is already a cash payment line."
-msgstr "Esiste già una riga pagamento in contanti."
-
-#. module: point_of_sale
-#. odoo-javascript
-#: code:addons/point_of_sale/static/src/app/models/pos_order.js:0
 #: code:addons/point_of_sale/static/src/app/screens/payment_screen/payment_screen.js:0
 msgid "There is already an electronic payment in progress."
 msgstr "È già in corso un pagamento elettronico."
@@ -9650,16 +9761,6 @@ msgid ""
 msgstr ""
 "Questo giornale è associato a un metodo di pagamento. Non è possibile "
 "modificare il suo tipo"
-
-#. module: point_of_sale
-#. odoo-python
-#: code:addons/point_of_sale/models/account_journal.py:0
-msgid ""
-"This journal is associated with payment method %(payment_method)s that is "
-"being used by order %(pos_order)s in the active pos session %(pos_session)s"
-msgstr ""
-"Il registro è associato al metodo di pagamento %(payment_method)s utilizzato "
-"per l'ordine %(pos_order)s nella sessione pos attiva %(pos_session)s"
 
 #. module: point_of_sale
 #. odoo-javascript
@@ -9933,7 +10034,7 @@ msgstr "Prezzo totale imposte incl.:"
 
 #. module: point_of_sale
 #. odoo-javascript
-#: code:addons/point_of_sale/static/src/app/components/popups/product_info_popup/product_info_popup.xml:0
+#: code:addons/point_of_sale/static/src/app/components/popups/product_info_popup/product_info_popup.js:0
 msgid "Total VAT:"
 msgstr "IVA totale:"
 
@@ -10258,10 +10359,15 @@ msgstr "UUID"
 
 #. module: point_of_sale
 #. odoo-javascript
-#: code:addons/point_of_sale/static/src/app/components/popups/product_info_popup/product_info_popup.js:0
 #: code:addons/point_of_sale/static/src/app/screens/receipt_screen/receipt/receipt_header/receipt_header.xml:0
 msgid "VAT"
 msgstr "Partita IVA"
+
+#. module: point_of_sale
+#. odoo-javascript
+#: code:addons/point_of_sale/static/src/app/components/popups/product_info_popup/product_info_popup.js:0
+msgid "VAT:"
+msgstr "Partita IVA:"
 
 #. module: point_of_sale
 #. odoo-javascript
@@ -10478,6 +10584,16 @@ msgstr ""
 "visualizzarlo su un altro dispositivo"
 
 #. module: point_of_sale
+#. odoo-python
+#: code:addons/point_of_sale/models/account_journal.py:0
+msgid ""
+"You can not archive this journal because it is set on the following payment "
+"method : %s."
+msgstr ""
+"Non è possibile archiviare questo registro perché è impostato sul seguente "
+"metodo di pagamento: %s."
+
+#. module: point_of_sale
 #. odoo-javascript
 #: code:addons/point_of_sale/static/src/app/screens/product_screen/product_screen.js:0
 msgid "You can not change the %s of the refund order."
@@ -10548,6 +10664,16 @@ msgid ""
 msgstr ""
 "Non è possibile archiviare \"%(picking_type)s\"  in quanto utilizzato da una "
 "configurazione POS \"%(config)s\"."
+
+#. module: point_of_sale
+#. odoo-python
+#: code:addons/point_of_sale/models/product_template.py:0
+msgid ""
+"You cannot archive a product that is set as a special product in a Point of "
+"Sale configuration. Please change the configuration first."
+msgstr ""
+"Non è possibile archiviare un prodotto impostato come prodotto speciale "
+"nella configurazione di un Punto vendita. Prima modifica la configurazione."
 
 #. module: point_of_sale
 #. odoo-python
@@ -10919,13 +11045,6 @@ msgstr "previsto"
 
 #. module: point_of_sale
 #. odoo-javascript
-#: code:addons/point_of_sale/static/src/app/components/popups/combo_configurator_popup/combo_configurator_popup.xml:0
-#: model_terms:ir.ui.view,arch_db:point_of_sale.product_combo_view_form
-msgid "free"
-msgstr "gratis"
-
-#. module: point_of_sale
-#. odoo-javascript
 #: code:addons/point_of_sale/static/src/app/components/popups/product_info_popup/product_info_popup.xml:0
 msgid "from"
 msgstr "da"
@@ -10955,6 +11074,12 @@ msgstr "in corso"
 #: code:addons/point_of_sale/static/src/app/screens/product_screen/product_screen.xml:0
 msgid "in this category."
 msgstr "in questa categoria."
+
+#. module: point_of_sale
+#. odoo-javascript
+#: code:addons/point_of_sale/static/src/app/components/popups/combo_configurator_popup/combo_configurator_popup.xml:0
+msgid "included"
+msgstr "incluso"
 
 #. module: point_of_sale
 #. odoo-javascript
@@ -11042,6 +11167,36 @@ msgstr "per attivare i pulsanti."
 msgid "using"
 msgstr "usando"
 
+#~ msgid "Action cancelled (%s)"
+#~ msgstr "Azione annullata (%s)"
+
+#~ msgid "Cash drawer opened (%s)"
+#~ msgstr "Registratore di cassa aperto (%s)"
+
+#~ msgid "There is already a cash payment line."
+#~ msgstr "Esiste già una riga pagamento in contanti."
+
+#~ msgid "free"
+#~ msgstr "gratis"
+
+#~ msgid ""
+#~ "This journal is associated with payment method %(payment_method)s that is "
+#~ "being used by order %(pos_order)s in the active pos session %"
+#~ "(pos_session)s"
+#~ msgstr ""
+#~ "Il registro è associato al metodo di pagamento %(payment_method)s "
+#~ "utilizzato per l'ordine %(pos_order)s nella sessione pos attiva %"
+#~ "(pos_session)s"
+
+#~ msgid ""
+#~ "Local Network Access configuration is enabled, but your browser is not "
+#~ "Chromium-based. Please use a Chromium-based browser to benefit from this "
+#~ "feature."
+#~ msgstr ""
+#~ "La configurazione dell'accesso alla rete locale è attiva ma il tuo "
+#~ "browser non è basato su Chromium. Utilizza un browser basato su Chromium "
+#~ "per beneficiare di questa funzionalità."
+
 #~ msgid ""
 #~ "Unable to create consolidated invoice/s because the following orders "
 #~ "can't be invoiced.\n"
@@ -11052,9 +11207,6 @@ msgstr "usando"
 #~ "seguenti ordini.\n"
 #~ "\n"
 #~ "%s"
-
-#~ msgid "VAT:"
-#~ msgstr "Partita IVA:"
 
 #~ msgid "Ok"
 #~ msgstr "Ok"

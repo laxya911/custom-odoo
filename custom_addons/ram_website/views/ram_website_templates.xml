@@ -14,6 +14,9 @@
     <template id="ram_homepage" inherit_id="website.homepage" name="RAM Homepage" priority="120">
         <xpath expr="//div[@id='wrap']" position="replace">
             <t t-set="website_id" t-value="request.website.id"/>
+            <script type="text/javascript">
+                window.ram_user_id = <t t-esc="request.env.user.id if not request.env.user._is_public() else 'false'"/>;
+            </script>
 
             <t t-set="locations" t-value="request.env['ram.website.location'].sudo().search([('is_published', '=', True), '|', ('website_id', '=', False), ('website_id', '=', website_id)], order='sequence asc, id desc', limit=3)"/>
             <t t-set="main_location" t-value="locations and locations[0] or False"/>
@@ -971,10 +974,24 @@
                      <span id="ram_redirect_ref" t-att-data-ref="tx.reference" class="d-none"/>
                  </div>
                  <script>
-                     setTimeout(function() {
+                     (function() {
                          var ref = document.getElementById('ram_redirect_ref').dataset.ref;
-                         window.location.href = '/ram/payment/finalize?reference=' + ref;
-                     }, 1500);
+                         var key = 'ram_finalized_' + ref;
+                         if (!sessionStorage.getItem(key)) {
+                             sessionStorage.setItem(key, '1');
+                             setTimeout(function() {
+                                 window.location.href = '/ram/payment/finalize?reference=' + encodeURIComponent(ref);
+                             }, 1500);
+                         } else {
+                             // Already attempted finalization, hide spinner and show link instead
+                             var banner = document.getElementById('ram_auto_finalize_banner');
+                             if (banner) {
+                                 banner.innerHTML = '<p>Your order has been processed.</p>' +
+                                     '<a href="/ram" class="btn btn-primary">Back to Menu</a> ' +
+                                     '<a href="/ram/payment/finalize?reference=' + encodeURIComponent(ref) + '" class="btn btn-outline-secondary">Retry Finalization</a>';
+                             }
+                         }
+                     })();
                  </script>
              </t>
         </xpath>

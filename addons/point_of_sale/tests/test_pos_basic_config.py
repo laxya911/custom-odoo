@@ -5,11 +5,13 @@ import odoo
 
 from odoo import fields
 from odoo.addons.point_of_sale.tests.common import TestPoSCommon
+from odoo.exceptions import ValidationError
 from freezegun import freeze_time
 from dateutil.relativedelta import relativedelta
 from datetime import datetime, timedelta
-from pprint import pformat
 import unittest.mock
+from odoo.http import UserError
+
 
 @odoo.tests.tagged('post_install', '-at_install')
 class TestPoSBasicConfig(TestPoSCommon):
@@ -927,6 +929,19 @@ class TestPoSBasicConfig(TestPoSCommon):
         # calling load_data should not raise an error
         self.pos_session.load_data([])
 
+    def test_load_data_picks_the_company_website_domain(self):
+        if self.env['ir.module.module']._get('website').state != 'installed':
+            self.skipTest("website module is required for this test")
+
+        company_website = self.config.company_id.website_id
+
+        if company_website:
+            company_website.write({'domain': 'https://custom.test.domain.com'})
+            self.open_new_session()
+            response = self.pos_session.load_data([])
+
+            self.assertEqual(response['pos.config'][0]['_base_url'], company_website.domain)
+
     def test_invoice_past_refund(self):
         """ Test invoicing a past refund
 
@@ -1449,3 +1464,37 @@ class TestPoSBasicConfig(TestPoSCommon):
         })
 
         self.assertEqual(refund_order.refunded_order_id, orders[0])
+
+    def test_cannot_archive_journal_linked_to_pos_payment_method(self):
+        """Test that archiving a journal linked to a POS payment method is blocked, and allowed when not linked."""
+
+        test_journal = self.env['account.journal'].create({
+            'name': 'Test POS Journal',
+            'type': 'cash',
+            'code': 'TPJ',
+            'company_id': self.env.company.id,
+        })
+        test_payment_method = self.env['pos.payment.method'].create({
+            'name': 'Test PM',
+            'journal_id': test_journal.id,
+            'receivable_account_id': self.cash_pm1.receivable_account_id.id,
+        })
+
+        with self.assertRaises(ValidationError):
+            test_journal.action_archive()
+
+        # Unlink the payment method and try again (should succeed)
+        test_payment_method.journal_id = False
+        test_journal.action_archive()
+        self.assertFalse(test_journal.active, "Journal should be archived when not linked to a POS payment method.")
+
+    def test_archive_delete_special_product(self):
+        special_product = self.env.ref('point_of_sale.product_product_tip')
+        with self.assertRaisesRegex(UserError, "You cannot archive a product that is set as a special product in a Point of Sale configuration. Please change the configuration first."):
+            special_product.action_archive()
+        with self.assertRaisesRegex(UserError, "You cannot archive a product that is set as a special product in a Point of Sale configuration. Please change the configuration first."):
+            special_product.product_variant_ids[0].action_archive()
+        with self.assertRaisesRegex(UserError, "You cannot archive a product that is set as a special product in a Point of Sale configuration. Please change the configuration first."):
+            special_product.unlink()
+        with self.assertRaisesRegex(UserError, "You cannot archive a product that is set as a special product in a Point of Sale configuration. Please change the configuration first."):
+            special_product.product_variant_ids[0].unlink()

@@ -3,7 +3,7 @@
 # =============================================================================
 # Triggers:
 #   - Push to 'main' branch
-#   - Push to 'feature/*' branches
+#   - Push to 'develop' or 'testing/*' branches
 #   - Manual workflow dispatch
 #   - Release published
 # =============================================================================

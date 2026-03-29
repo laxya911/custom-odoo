@@ -171,6 +171,11 @@ class TestMrpAccount(TestBomPriceCommon):
         overview_values = self.env['report.mrp.report_mo_overview'].get_report_values(mo.id)
         self.assertEqual(round(overview_values['data']['summary']['mo_cost'], 2), 677.08)
 
+    def test_mrp_user_without_account_permissions_can_create_bom(self):
+        mrp_user = new_test_user(self.env, 'temp_mrp_user', 'mrp.group_mrp_user')
+        mo_1 = self._create_mo(self.bom_1, 1)
+        mo_1.with_user(mrp_user).button_mark_done()
+
 
 class TestMrpAccountWorkorder(TestBomPriceOperationCommon):
 
@@ -210,7 +215,7 @@ class TestMrpAccountWorkorder(TestBomPriceOperationCommon):
         self.assertEqual(self.scrap_wood.standard_price, 30, "Initial price of the By-Product should be 30")
         # bom price is 871.25. Byproduct cost share is 12%+1% = 13% -> 113.26 for 8+12 units -> 5.66
         self.scrap_wood.button_bom_cost()
-        self.assertEqual(self.scrap_wood.standard_price, 5.66, "After computing price from BoM price should be 20.63")
+        self.assertAlmostEqual(self.scrap_wood.standard_price, 5.663125, "After computing price from BoM price should be 20.63")
 
     def test_wip_accounting_00(self):
         """ Test that posting a WIP accounting entry works as expected.
@@ -454,3 +459,66 @@ class TestMrpAccountWorkorder(TestBomPriceOperationCommon):
         mo.move_raw_ids.picked = True
         mo.button_mark_done()
         self.assertEqual(mo.state, 'done')
+
+    def test_labor_move_not_duplicated_when_backorder_always(self):
+        """Ensure labor accounting entry is not duplicated when create backorder is set to always."""
+        self.env.ref('base.group_user').implied_ids += self.env.ref('mrp.group_mrp_routings')
+
+        picking_type = self.env['stock.picking.type'].search([
+            ('code', '=', 'mrp_operation'),
+            ('company_id', '=', self.env.company.id),
+        ], limit=1)
+        self.assertTrue(picking_type, "Manufacturing operation type not found")
+        picking_type.create_backorder = 'always'
+
+        self.workcenter.costs_hour = 20
+
+        self.env['mrp.routing.workcenter'].create({
+            'name': 'work',
+            'bom_id': self.bom_1.id,
+            'workcenter_id': self.workcenter.id,
+            'time_cycle': 60,
+            'sequence': 1,
+        })
+
+        production = self._create_mo(self.bom_1, 100)
+        production.action_confirm()
+
+        workorder = production.workorder_ids
+        self.assertTrue(workorder, "Workorder should have been created")
+        workorder.duration = 1.0
+        workorder.time_ids.write({'duration': 1.0})
+
+        mo_form = Form(production)
+        mo_form.qty_producing = 50
+        production = mo_form.save()
+
+        production.move_raw_ids.picked = True
+        production._post_inventory()
+        production.button_mark_done()
+
+        labour_moves = self.env['account.move'].search([
+            ('ref', '=', f'{production.name} - Labour'),
+            ('state', '=', 'posted'),
+            ('company_id', '=', production.company_id.id),
+        ])
+        self.assertEqual(
+            len(labour_moves), 1,
+            "Labor entry should not be duplicated when backorder=always",
+        )
+
+    def test_mrp_user_with_timesheet_permissions_can_produce_mo(self):
+        """ Test that an MRP user with timesheet access but without accounting rights
+        can complete a Manufacturing Order when analytic distribution is applied,
+        ensuring timesheet rules do not block the process. """
+        if 'hr_timesheet' not in self.env["ir.module.module"]._installed():
+            self.skipTest('Timesheets is not installed')
+
+        mrp_user = new_test_user(self.env, 'temp_mrp_user', 'mrp.group_mrp_user, hr_timesheet.group_hr_timesheet_user')
+        analytic_plan = self.env['account.analytic.plan'].create({'name': 'Plan Test'})
+        wc_analytic_account = self.env['account.analytic.account'].create({'name': 'Analytic Account', 'plan_id': analytic_plan.id})
+        mo_1 = self._create_mo(self.bom_1, 1)
+
+        mo_1.workorder_ids[0].workcenter_id.analytic_distribution = {str(wc_analytic_account.id): 100.0}
+        mo_1.with_user(mrp_user).button_mark_done()
+        self.assertEqual(mo_1.state, 'done')

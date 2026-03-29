@@ -260,12 +260,31 @@ class RamWebsiteController(http.Controller):
         partner = request.env.user.partner_id
         orders = request.env['pos.order'].sudo().search([
             ('partner_id', '=', partner.id),
-            ('amount_total', '>', 0) # Optional: filter empty/failed
+            ('amount_total', '>', 0)
         ], order='date_order desc')
         
         return request.render('ram_website.ram_order_list_page', {
             'orders': orders,
         })
+
+    @http.route('/ram/orders/json', type='json', auth='user')
+    def ram_order_list_json(self):
+        partner = request.env.user.partner_id
+        orders = request.env['pos.order'].sudo().search([
+            ('partner_id', '=', partner.id),
+        ], order='date_order desc', limit=10)
+        
+        return [{
+            'id': o.id,
+            'pos_reference': o.pos_reference,
+            'name': o.name,
+            'date': o.date_order.isoformat() if o.date_order else '',
+            'amount_total': o.amount_total,
+            'state': o.state,
+            'delivery_status': o.delivery_status or 'received',
+            'unique_uuid': o.unique_uuid,
+            'invoice_id': o.account_move.id if o.account_move else False,
+        } for o in orders]
 
     @http.route('/ram/order/status/<string:uuid>', type='http', auth='public', website=True)
     def ram_order_status_page(self, uuid, **kwargs):

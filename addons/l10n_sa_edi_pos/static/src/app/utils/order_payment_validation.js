@@ -1,5 +1,5 @@
 import { _t } from "@web/core/l10n/translation";
-import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
+import { AlertDialog, ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import OrderPaymentValidation from "@point_of_sale/app/utils/order_payment_validation";
 import { markup } from "@odoo/owl";
 import { patch } from "@web/core/utils/patch";
@@ -14,10 +14,12 @@ patch(OrderPaymentValidation.prototype, {
 
         // note: isSACompany guarantees order.is_to_invoice()
         // expect for cases like deposit and settlement
+        // Skip if invoice is not mandatory(Ex: settlement)
+        // Skips entirely if journal is not onboarded or electronic invoicing is not selected
         if (
             this.order.isInvoiceMandatoryForSA() &&
             this.order.finalized &&
-            this.order.l10n_sa_invoice_edi_state !== "sent"
+            !this.order.l10n_sa_invoice_qr_code_str
         ) {
             const orderError = _t(
                 "%s by going to Backend > Orders > Invoice",
@@ -41,5 +43,20 @@ patch(OrderPaymentValidation.prototype, {
             });
         }
         return potentialValidationError;
+    },
+
+    async validateOrder(isForceValidate) {
+        const order = this.order;
+        // the isAnySettleLine() is only available if enterprise:pos_settle_due module is installed
+        const settleLineCount = order.lines.filter((line) => line.isAnySettleLine?.()).length;
+        if (settleLineCount && settleLineCount !== order.lines.length) {
+            return this.dialog.add(AlertDialog, {
+                title: _t("Settlement Error"),
+                body: _t(
+                    "Please remove the new order lines from the order to proceed with the settlement."
+                ),
+            });
+        }
+        await super.validateOrder(...arguments);
     },
 });
