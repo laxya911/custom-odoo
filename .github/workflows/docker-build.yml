@@ -282,7 +282,7 @@ jobs:
       contents: read
 
     env:
-      VPS_PATH: ${{ vars.VPS_PATH || '/home/ubuntu/odoo' }}
+      VPS_PATH: ${{ vars.VPS_PATH || '/home/odoouser/odoo' }}
 
     steps:
       - name: Validate VPS secrets
