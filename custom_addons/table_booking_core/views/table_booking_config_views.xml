@@ -20,8 +20,20 @@
                         </group>
                         <group string="Timing &amp; Rules">
                             <group>
-                                <field name="opening_time" widget="float_time"/>
-                                <field name="closing_time" widget="float_time"/>
+                                <label for="opening_time" string="Operating Periods"/>
+                                <div className="o_row">
+                                    <field name="opening_time" widget="float_time" class="oe_inline"/>
+                                    <span> to </span>
+                                    <field name="closing_time" widget="float_time" class="oe_inline"/>
+                                    <span class="text-muted">(Default fallback)</span>
+                                </div>
+                                <field name="service_period_ids">
+                                    <list editable="bottom">
+                                        <field name="name"/>
+                                        <field name="opening_time" widget="float_time"/>
+                                        <field name="closing_time" widget="float_time"/>
+                                    </list>
+                                </field>
                                 <field name="max_party_size"/>
                             </group>
                             <group>
