@@ -10,14 +10,16 @@
         'views/pos_table_views.xml',
     ],
     'assets': {
-        'point_of_sale._assets_pos': [
+        'point_of_sale.assets_prod': [
             'table_booking_pos/static/src/js/booking_notifications.js',
             'table_booking_pos/static/src/js/floor_plan_extension.js',
             'table_booking_pos/static/src/js/booking_actions.js',
             'table_booking_pos/static/src/js/booking_ui.js',
+            'table_booking_pos/static/src/js/BookingCreationPopup.js',
             'table_booking_pos/static/src/xml/FloorScreen.xml',
-            'table_booking_pos/static/src/xml/BookingsButton.xml',
+            'table_booking_pos/static/src/xml/Navbar.xml',
             'table_booking_pos/static/src/xml/BookingsScreen.xml',
+            'table_booking_pos/static/src/xml/BookingCreationPopup.xml',
             'table_booking_pos/static/src/css/pos_booking.css',
         ],
     },

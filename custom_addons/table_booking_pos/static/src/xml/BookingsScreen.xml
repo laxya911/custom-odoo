@@ -21,6 +21,11 @@
                     <i class="fa fa-refresh me-2" />
                     <span>Refresh</span>
                 </button>
+                
+                <button class="btn btn-lg btn-success ms-2 shadow-sm px-4 rounded-pill" t-on-click="() => this.createNewBooking()">
+                    <i class="fa fa-plus me-2" />
+                    <span>New Booking</span>
+                </button>
             </div>
             
             <!-- List View Content -->
@@ -79,7 +84,7 @@
                                         <td class="py-3 text-primary fw-bold"><t t-esc="formatTime(booking.start_time)"/></td>
                                         <td class="py-3 text-muted"><t t-esc="booking.table_names or '-'"/></td>
                                         <td class="py-3">
-                                            <span t-attf-class="badge rounded-pill px-3 py-2 {{ booking.status === 'confirmed' ? 'bg-primary' : booking.status === 'checked_in' ? 'bg-success' : 'bg-secondary' }}">
+                                            <span t-attf-class="badge rounded-pill px-3 py-2 {{ booking.status === 'confirmed' ? 'bg-primary' : booking.status === 'checked_in' ? 'bg-success' : booking.status === 'completed' ? 'bg-info text-white' : 'bg-secondary' }}">
                                                 <t t-esc="getBookingStatus(booking.status)"/>
                                             </span>
                                         </td>
@@ -87,6 +92,9 @@
                                             <t t-if="booking.status === 'confirmed'">
                                                 <button class="btn btn-success btn-sm me-1 px-3 shadow-sm border-0" t-on-click="() => this.checkIn(booking.id)">Check-in</button>
                                                 <button class="btn btn-outline-danger btn-sm px-3" t-on-click="() => this.noShow(booking.id)">No-show</button>
+                                            </t>
+                                            <t t-if="booking.status === 'checked_in'">
+                                                <button class="btn btn-info btn-sm px-3 text-white shadow-sm border-0" t-on-click="() => this.actionComplete(booking.id)">Complete</button>
                                             </t>
                                         </td>
                                     </tr>

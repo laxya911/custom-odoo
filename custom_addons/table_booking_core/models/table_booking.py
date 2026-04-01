@@ -50,6 +50,13 @@ class TableBooking(models.Model):
         for record in self:
             record.table_names = ", ".join(record.resource_ids.mapped('name'))
 
+    @api.onchange('customer_id')
+    def _onchange_customer_id(self):
+        if self.customer_id:
+            self.customer_name = self.customer_id.name
+            self.customer_phone = self.customer_id.phone
+            self.customer_email = self.customer_id.email
+
     @api.model_create_multi
     def create(self, vals_list):
         if isinstance(vals_list, dict):
@@ -228,7 +235,15 @@ class TableBooking(models.Model):
             elif not partner.phone and customer_data.get('phone'):
                 partner.sudo().write({'phone': customer_data['phone']})
 
-            # 2. Double Booking Check (Customer already has a booking at this time)
+            # 2. Capacity Check
+            party_size = int(kwargs.get('party_size', 1))
+            table_ids = [t['id'] for t in slot_data.get('tables', [])]
+            if table_ids:
+                total_capacity = sum(self.env['table.resource'].sudo().browse(table_ids).mapped('capacity'))
+                if total_capacity < party_size:
+                    return {'status': 'error', 'message': _('Selected tables can only accommodate %s guests.') % total_capacity}
+
+            # 3. Double Booking Check (Customer already has a booking at this time)
             existing = self.sudo().search([
                 ('customer_id', '=', partner.id),
                 ('status', 'in', ['confirmed', 'checked_in']),
@@ -237,8 +252,7 @@ class TableBooking(models.Model):
             if existing:
                 return {'status': 'error', 'message': _('You already have a booking for this time.')}
 
-            # 3. Overlap check (Table already booked)
-            table_ids = [t['id'] for t in slot_data.get('tables', [])]
+            # 4. Overlap check (Table already booked)
             if table_ids:
                 overlapping = self.sudo().search([
                     ('status', 'in', ['confirmed', 'checked_in']),
@@ -284,6 +298,10 @@ class TableBooking(models.Model):
         booking.action_cancel()
         return {'status': 'success', 'message': 'Booking cancelled'}
 
+    def action_confirm(self):
+        self.ensure_one()
+        self.status = 'confirmed'
+
     def action_check_in(self):
         self.ensure_one()
         self.status = 'checked_in'
@@ -295,6 +313,10 @@ class TableBooking(models.Model):
     def action_cancel(self):
         self.ensure_one()
         self.status = 'cancelled'
+
+    def action_complete(self):
+        self.ensure_one()
+        self.status = 'completed'
 
     @api.model
     def get_customer_activities(self, email=None):

@@ -8,6 +8,7 @@ import { patch } from "@web/core/utils/patch";
 import { _t } from "@web/core/l10n/translation";
 
 import { registry } from "@web/core/registry";
+import { BookingCreationPopup } from "@table_booking_pos/js/BookingCreationPopup";
 
 // 1. Define the Screen
 export class BookingsScreen extends Component {
@@ -25,6 +26,7 @@ export class BookingsScreen extends Component {
     setup() {
         this.pos = usePos();
         this.ui = useService("ui");
+        this.dialog = useService("dialog");
         this.state = useState({
             bookings: [],
             isLoading: false,
@@ -45,14 +47,7 @@ export class BookingsScreen extends Component {
     }
 
     _formatDate(date) {
-        const pad = (num) => String(num).padStart(2, '0');
-        const Y = date.getFullYear();
-        const M = pad(date.getMonth() + 1);
-        const D = pad(date.getDate());
-        const h = pad(date.getHours());
-        const m = pad(date.getMinutes());
-        const s = pad(date.getSeconds());
-        return `${Y}-${M}-${D} ${h}:${m}:${s}`;
+        return date.toISOString().replace('T', ' ').substring(0, 19);
     }
 
     async loadBookings() {
@@ -67,7 +62,7 @@ export class BookingsScreen extends Component {
             const domain = [
                 ["start_time", ">=", this._formatDate(start)],
                 ["start_time", "<=", this._formatDate(end)],
-                ["status", "in", ["confirmed", "checked_in", "no_show"]]
+                ["status", "in", ["confirmed", "checked_in", "no_show", "completed"]]
             ];
             
             console.log("POS Bookings: Requesting domain", domain);
@@ -111,6 +106,24 @@ export class BookingsScreen extends Component {
         }
     }
 
+    async actionComplete(bookingId) {
+        try {
+            this.ui.block();
+            await this.pos.data.call("table.booking", "action_complete", [[bookingId]]);
+            await this.loadBookings();
+        } finally {
+            this.ui.unblock();
+        }
+    }
+
+    async createNewBooking() {
+        console.log("POS Bookings: Opening New Booking form directly");
+        await this.dialog.add(BookingCreationPopup, {
+            partner: null,
+            confirm: () => this.loadBookings(),
+        });
+    }
+
     formatTime(timeStr) {
         if (!timeStr) return "";
         try {
@@ -131,6 +144,7 @@ export class BookingsScreen extends Component {
             'confirmed': _t('Confirmed'),
             'checked_in': _t('Checked In'),
             'no_show': _t('No Show'),
+            'completed': _t('Completed'),
             'cancelled': _t('Cancelled'),
             'draft': _t('Draft')
         };
@@ -150,40 +164,15 @@ registry.category("pos_pages").add("BookingsScreen", {
     route: `/pos/ui/${odoo.pos_config_id}/bookings`,
 });
 
-// 2. Define the Button
-export class BookingsButton extends Component {
-    static template = "table_booking_pos.BookingsButton";
-    static props = {};
-
-    setup() {
-        this.pos = usePos();
-        this.dialog = useService("dialog");
-    }
-
-    get isActive() {
-        return this.pos.mainScreen && this.pos.mainScreen.component && this.pos.mainScreen.component.name === "BookingsScreen";
-    }
-
-    onClick(ev) {
-        if (ev && ev.stopPropagation) ev.stopPropagation();
-        this.pos.navigate("BookingsScreen");
-    }
-}
-
-// 4. Navbar Patch to handle active state for Bookings
+// 3. Patch the Navbar
 patch(Navbar.prototype, {
     get mainButton() {
-        if (this.pos.router.state.current === 'BookingsScreen') {
+        if (this.pos.mainScreen.component === 'BookingsScreen') {
             return 'bookings';
         }
         return super.mainButton;
+    },
+    onBookingsClick() {
+        this.pos.navigate("BookingsScreen");
     }
-});
-
-// 3. Patch the Navbar - Ensure components object exists
-if (!Navbar.components) {
-    Navbar.components = {};
-}
-patch(Navbar, {
-    components: { ...Navbar.components, BookingsButton },
 });

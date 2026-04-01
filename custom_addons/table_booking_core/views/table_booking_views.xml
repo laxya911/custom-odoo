@@ -7,7 +7,9 @@
             <field name="arch" type="xml">
                 <form string="Table Booking" class="o_booking_form">
                     <header>
+                        <button name="action_confirm" string="Confirm" type="object" class="oe_highlight" invisible="status != 'draft'"/>
                         <button name="action_check_in" string="Check In" type="object" class="oe_highlight" invisible="status != 'confirmed'"/>
+                        <button name="action_complete" string="Complete" type="object" class="oe_highlight" invisible="status != 'checked_in'"/>
                         <button name="action_no_show" string="No Show" type="object" invisible="status != 'confirmed'"/>
                         <button name="action_cancel" string="Cancel" type="object" invisible="status in ['cancelled', 'no_show', 'completed']"/>
                         <field name="status" widget="statusbar" statusbar_visible="draft,confirmed,checked_in,completed"/>
