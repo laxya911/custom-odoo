@@ -1,10 +1,15 @@
 {
     'name': 'Table Booking POS Integration',
-    'version': '1.0',
+    'version': '19.0.1.0.0',
     'category': 'Point of Sale',
     'summary': 'Live Table Booking sync and notifications for POS',
-    'author': 'Antigravity',
-    'depends': ['point_of_sale', 'pos_restaurant', 'table_booking_core'],
+    'description': """
+        The complete Restaurant Table Booking Suite. 
+        Provides live syncing of online table bookings directly to your Odoo POS.
+        Includes table management, collision-proof slots, and visual floor plan alerts.
+    """,
+    'author': 'Geotek',
+    'depends': ['pos_restaurant', 'table_booking_core', 'pos_remote_print'],
     'data': [
         'views/pos_config_views.xml',
         'views/pos_table_views.xml',
@@ -24,6 +29,9 @@
         ],
     },
     'installable': True,
+    'application': True,
     'auto_install': False,
-    'license': 'LGPL-3',
+    'license': 'OPL-1',
+    'price': 49.00,
+    'currency': 'USD',
 }

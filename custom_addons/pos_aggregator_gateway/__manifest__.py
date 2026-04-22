@@ -10,11 +10,12 @@
         - Maps external IDs to Odoo IDs.
         - Calls pos_order_api to create orders.
     """,
-    'depends': ['pos_order_api'],
+    'depends': ['pos_order_api', 'pos_remote_print'],
     'data': [
         'security/ir.model.access.csv',
         'views/aggregator_config_views.xml',
     ],
     'installable': True,
-    'license': 'LGPL-3',
+    'application': True,
+    'license': 'OPL-1',
 }
