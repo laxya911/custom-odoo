@@ -2,7 +2,7 @@ import io
 import logging
 
 from odoo import _, models
-from odoo.tools import frozendict, html2plaintext, pdf
+from odoo.tools import frozendict, html2plaintext, pdf, str2bool
 from odoo.addons.account_edi_ubl_cii.models.account_edi_common import (
     FloatFmt,
     GST_COUNTRY_CODES,
@@ -18,13 +18,22 @@ class AccountEdiUBL(models.AbstractModel):
 
     def _import_attachments(self, invoice, tree):
         """ EXTENDS 'account_edi_common': ATTEMPTS to create a PDF attachment when the XML file doesn't provide one."""
-
+        IrConfigParam = self.env['ir.config_parameter'].sudo()
+        disable_pdf_in_xml = str2bool(IrConfigParam.get_param("account_edi_ubl_cii.disable_pdf_in_xml", 'False'))
         additional_docs = super()._import_attachments(invoice, tree)
-        if additional_docs or invoice.message_main_attachment_id or not invoice.is_purchase_document():
+        if (
+            additional_docs or
+            invoice.message_main_attachment_id or
+            not invoice.is_purchase_document() or
+            disable_pdf_in_xml
+        ):
             return additional_docs
         try:
             invoices_by_odoo_xmlid = 'account_edi_ubl_cii.action_report_account_invoices_generated_by_odoo'
-            report_xmlid = invoices_by_odoo_xmlid if self.env.ref(invoices_by_odoo_xmlid, raise_if_not_found=False) else 'account.account_invoices'
+            if not self.env.ref(invoices_by_odoo_xmlid, raise_if_not_found=False):
+                _logger.warning("Missing template while generating substitute PDF attachment for invoice %s", invoice.id)
+                return additional_docs
+            report_xmlid = invoices_by_odoo_xmlid
 
             pdf_raw, pdf_extension = self.env['ir.actions.report'] \
                         ._render_qweb_pdf(report_xmlid, res_ids=[invoice.id])
@@ -1089,12 +1098,23 @@ class AccountEdiUBL(models.AbstractModel):
     def _ubl_add_line_price_node(self, vals, in_foreign_currency=True):
         line_node = vals['line_node']
         base_line = vals['line_vals']['base_line']
-        suffix = '_currency' if in_foreign_currency else ''
         currency = base_line['currency_id'] if in_foreign_currency else vals['company_currency']
+
+        raw_gross_total_excluded = self.env['account.tax']._get_gross_total_without_tax(
+            base_line=base_line,
+            company=vals['company'],
+            in_foreign_currency=in_foreign_currency,
+        )
+        raw_gross_price_unit = self.env['account.tax']._get_price_unit_without_tax(
+            base_line=base_line,
+            company=vals['company'],
+            raw_gross_total_excluded=raw_gross_total_excluded,
+            in_foreign_currency=in_foreign_currency,
+        )
 
         line_node['cac:Price'] = {
             'cbc:PriceAmount': {
-                '_text': FloatFmt(base_line['tax_details'][f'raw_gross_price_unit{suffix}'], min_dp=1, max_dp=6),
+                '_text': FloatFmt(raw_gross_price_unit, min_dp=1),
                 'currencyID': currency.name,
             },
         }
@@ -1288,7 +1308,7 @@ class AccountEdiUBL(models.AbstractModel):
             gross_total_excluded += sign * allowance_charge_node['cbc:Amount']['_text']
 
         line_node['cbc:LineExtensionAmount'] = {
-            '_text': FloatFmt(gross_total_excluded, min_dp=currency.decimal_places),
+            '_text': FloatFmt(gross_total_excluded, max_dp=currency.decimal_places),
             'currencyID': currency.name,
         }
 
@@ -1648,7 +1668,7 @@ class AccountEdiUBL(models.AbstractModel):
         vals['document_node']['cbc:BuyerReference'] = {'_text': None}
 
     def _ubl_add_invoice_period_nodes(self, vals):
-        vals['document_node']['cac:InvoicePeriod'] = []
+        vals['document_node']['cac:InvoicePeriod'] = {}
 
     def _ubl_add_order_reference_node(self, vals):
         vals['document_node']['cac:OrderReference'] = {
@@ -1820,11 +1840,11 @@ class AccountEdiUBL(models.AbstractModel):
         return {
             '_currency': currency,
             'cbc:TaxableAmount': {
-                '_text': FloatFmt(tax_subtotal['base_amount'], min_dp=currency.decimal_places),
+                '_text': FloatFmt(tax_subtotal['base_amount'], max_dp=currency.decimal_places),
                 'currencyID': currency.name
             },
             'cbc:TaxAmount': {
-                '_text': FloatFmt(tax_subtotal['tax_amount'], min_dp=currency.decimal_places),
+                '_text': FloatFmt(tax_subtotal['tax_amount'], max_dp=currency.decimal_places),
                 'currencyID': currency.name
             },
             'cbc:Percent': {
@@ -1853,7 +1873,7 @@ class AccountEdiUBL(models.AbstractModel):
         return {
             '_currency': currency,
             'cbc:TaxAmount': {
-                '_text': FloatFmt(tax_total['amount'], min_dp=currency.decimal_places),
+                '_text': FloatFmt(tax_total['amount'], max_dp=currency.decimal_places),
                 'currencyID': currency.name
             },
             'cac:TaxSubtotal': [
@@ -2033,7 +2053,7 @@ class AccountEdiUBL(models.AbstractModel):
             for line_node in vals['document_node'].get(line_key, [])
         )
         vals['legal_monetary_total_node']['cbc:LineExtensionAmount'] = {
-            '_text': FloatFmt(line_extension_amount, min_dp=currency.decimal_places),
+            '_text': FloatFmt(line_extension_amount, max_dp=currency.decimal_places),
             'currencyID': currency.name,
         }
 
@@ -2042,7 +2062,7 @@ class AccountEdiUBL(models.AbstractModel):
         node = vals['legal_monetary_total_node']
 
         node['cbc:TaxExclusiveAmount'] = {
-            '_text': FloatFmt(node['cbc:LineExtensionAmount']['_text'], min_dp=currency.decimal_places),
+            '_text': FloatFmt(node['cbc:LineExtensionAmount']['_text'], max_dp=currency.decimal_places),
             'currencyID': currency.name,
         }
 
@@ -2064,7 +2084,7 @@ class AccountEdiUBL(models.AbstractModel):
         node['cbc:TaxInclusiveAmount'] = {
             '_text': FloatFmt(
                 node['cbc:TaxExclusiveAmount']['_text'] + tax_amount,
-                min_dp=currency.decimal_places,
+                max_dp=currency.decimal_places,
             ),
             'currencyID': currency.name,
         }
@@ -2086,11 +2106,11 @@ class AccountEdiUBL(models.AbstractModel):
 
         node.update({
             'cbc:AllowanceTotalAmount': {
-                '_text': FloatFmt(total_allowance, min_dp=currency.decimal_places),
+                '_text': FloatFmt(total_allowance, max_dp=currency.decimal_places),
                 'currencyID': currency.name,
             } if total_allowance else None,
             'cbc:ChargeTotalAmount': {
-                '_text': FloatFmt(total_charge, min_dp=currency.decimal_places),
+                '_text': FloatFmt(total_charge, max_dp=currency.decimal_places),
                 'currencyID': currency.name,
             } if total_charge else None,
         })
@@ -2101,14 +2121,14 @@ class AccountEdiUBL(models.AbstractModel):
 
         payable_rounding_amount = (node['cbc:PayableRoundingAmount'] or {}).get('_text') or 0.0
         node['cbc:PrepaidAmount'] = {
-            '_text': FloatFmt(0.0, min_dp=currency.decimal_places),
+            '_text': FloatFmt(0.0, max_dp=currency.decimal_places),
             'currencyID': currency.name,
         }
         node['cbc:PayableAmount'] = {
             '_text': FloatFmt(
                 node['cbc:TaxInclusiveAmount']['_text']
                 + payable_rounding_amount,
-                min_dp=currency.decimal_places,
+                max_dp=currency.decimal_places,
             ),
             'currencyID': currency.name,
         }
@@ -2130,7 +2150,7 @@ class AccountEdiUBL(models.AbstractModel):
         )
         values_per_grouping_key = AccountTax._aggregate_base_lines_aggregated_values(base_lines_aggregated_values)
         expected_tax_inclusive_amount = sum(
-             values['base_amount_currency'] + values['tax_amount_currency']
+             values['total_excluded_currency'] + values['tax_amount_currency']
              for values in values_per_grouping_key.values()
         )
 
@@ -2142,7 +2162,7 @@ class AccountEdiUBL(models.AbstractModel):
             }
         else:
             node['cbc:PayableRoundingAmount'] = {
-                '_text': FloatFmt(payable_rounding_amount, min_dp=currency.decimal_places),
+                '_text': FloatFmt(payable_rounding_amount, max_dp=currency.decimal_places),
                 'currencyID': currency.name,
             }
 

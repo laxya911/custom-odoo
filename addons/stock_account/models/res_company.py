@@ -141,9 +141,12 @@ class ResCompany(models.Model):
         for company in companies:
             company.action_close_stock_valuation(auto_post=True)
 
+    def _get_valuation_product_domain(self):
+        return [('is_storable', '=', True)]
+
     def _get_accounts_by_product(self, products=None):
         if not products:
-            products = self.env['product.product'].with_company(self).search([('is_storable', '=', True)])
+            products = self.env['product.product'].with_company(self).search(self._get_valuation_product_domain())
 
         accounts_by_product = {}
         for product in products:
@@ -338,7 +341,7 @@ class ResCompany(models.Model):
             closing = self.env['account.move'].browse(closing_id).exists().filtered(lambda am: am.state == 'posted')
         if not closing:
             return False
-        am_state_field = self.env['ir.model.fields'].search([('model', '=', 'account.move'), ('name', '=', 'state')], limit=1)
+        am_state_field = self.env['ir.model.fields'].sudo().search([('model', '=', 'account.move'), ('name', '=', 'state')], limit=1)
         state_tracking = closing.message_ids.sudo().tracking_value_ids.filtered(lambda t: t.field_id == am_state_field).sorted('id')
         create_date = state_tracking[-1:].create_date
         if create_date and create_date.date() == closing.date:

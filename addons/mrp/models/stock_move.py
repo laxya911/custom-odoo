@@ -54,7 +54,7 @@ class StockMove(models.Model):
     order_finished_lot_ids = fields.Many2many('stock.lot', string="Finished Lot/Serial Number", related="raw_material_production_id.lot_producing_ids")
     should_consume_qty = fields.Float('Quantity To Consume', compute='_compute_should_consume_qty', digits='Product Unit')
     cost_share = fields.Float(
-        "Cost Share (%)", digits=(5, 2),  # decimal = 2 is important for rounding calculations!!
+        "Cost Share (%)", digits=0,
         help="The percentage of the final production cost for this by-product. The total of all by-products' cost share must be smaller or equal to 100.")
     product_qty_available = fields.Float('Product On Hand Quantity', related='product_id.qty_available', depends=['product_id'])
     product_virtual_available = fields.Float('Product Forecasted Quantity', related='product_id.virtual_available', depends=['product_id'])
@@ -452,7 +452,7 @@ class StockMove(models.Model):
             if not production:
                 continue
             cancelled_dests = move.move_dest_ids.filtered(lambda m: m.id in cancelled_ids)
-            if not cancelled_dests:
+            if not cancelled_dests.picking_id:
                 continue
             documents[move.production_id, move.production_id.user_id or self.env.user] = cancelled_dests
         return self.env['stock.picking']._log_activity(_render_note_exception_cancel_dest, documents)
@@ -641,8 +641,11 @@ class StockMove(models.Model):
 
     def _search_picking_for_assignation_domain(self):
         domain = super()._search_picking_for_assignation_domain()
-        domain += [('production_group_id', '=', self.production_group_id.id)]
+        domain += self._get_production_assignation_domain()
         return domain
+
+    def _get_production_assignation_domain(self):
+        return [('production_group_id', '=', self.production_group_id.id)]
 
     def action_open_reference(self):
         res = super().action_open_reference()

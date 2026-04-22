@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-20 18:35+0000\n"
-"PO-Revision-Date: 2026-03-27 06:27+0000\n"
+"POT-Creation-Date: 2026-04-17 18:37+0000\n"
+"PO-Revision-Date: 2026-04-17 09:39+0000\n"
 "Last-Translator: \"Junko Augias (juau)\" <juau@odoo.com>\n"
 "Language-Team: Japanese <https://translate.odoo.com/projects/odoo-19/account/"
 "ja/>\n"
@@ -174,6 +174,18 @@ msgstr "%(exception)s ： %(user)s%(end_datetime_string)s%(reason)sに対する�
 
 #. module: account
 #. odoo-python
+#: code:addons/account/models/account_move.py:0
+msgid "%(label)s at %(currency_amount)s"
+msgstr ""
+
+#. module: account
+#. odoo-python
+#: code:addons/account/models/account_move.py:0
+msgid "%(label)s at %(currency_amount)s (Draft)"
+msgstr ""
+
+#. module: account
+#. odoo-python
 #: code:addons/account/models/account_bank_statement_line.py:0
 msgid ""
 "%(move)s reached an invalid state regarding its related statement line.\n"
@@ -182,12 +194,6 @@ msgid ""
 msgstr ""
 "%(move)s関連明細行が無効な状態になりました。\n"
 "一貫性を保つために、仕訳帳は常に厳密に1つの保留明細を持たなければなりません。"
-
-#. module: account
-#. odoo-python
-#: code:addons/account/models/account_move.py:0
-msgid "%(name)s - Draft at (%(currency_amount)s)"
-msgstr ""
 
 #. module: account
 #. odoo-python
@@ -441,24 +447,9 @@ msgid "0% Imports"
 msgstr "0% 輸入"
 
 #. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_invoice_document
-msgid "1.00"
-msgstr "1.00"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.document_tax_totals_template
-msgid "1.05"
-msgstr "1.05"
-
-#. module: account
 #: model:account.payment.term,name:account.account_payment_term_30_days_end_month_the_10
 msgid "10 Days after End of Next Month"
 msgstr "末日締め翌々月10日払い"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_statement
-msgid "100.0"
-msgstr "100.0"
 
 #. module: account
 #: model_terms:ir.ui.view,arch_db:account.report_payment_receipt_document
@@ -466,103 +457,14 @@ msgid "100.00 USD"
 msgstr "100.00 USD"
 
 #. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_statement
-msgid "1000.0"
-msgstr "1000.0"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_invoice_document
-msgid "11.05"
-msgstr "11.05"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_statement
-msgid "12345"
-msgstr "12345"
-
-#. module: account
 #: model:account.payment.term,name:account.account_payment_term_15days
 msgid "15 Days"
 msgstr "15日以内"
 
 #. module: account
-#: model:account.tax,name:account.1_purchase_tax_template
-#: model:account.tax,name:account.1_sale_tax_template
-msgid "15%"
-msgstr "15%"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_statement
-msgid "1500.0"
-msgstr "1500.0"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_2_9
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_2_9
-#: model:account.tax,name:account.2_account_tax_us_purchase_2_9
-#: model:account.tax,name:account.2_account_tax_us_sale_2_9
-msgid "2.9%"
-msgstr "2.9%"
-
-#. module: account
 #: model:account.payment.term,name:account.account_payment_term_30days_early_discount
 msgid "2/7 Net 30"
 msgstr "期間は30日内、7日内で支払う場合は2%値引"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_invoice_document
-msgid "20.00"
-msgstr "20.00"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_invoice_document
-msgid "2021-09-19"
-msgstr "2021-09-19"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_payment_receipt_document
-msgid "2023-01-01"
-msgstr "2023-01-01"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_payment_receipt_document
-msgid "2023-01-05"
-msgstr "2023-01-05"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_statement
-msgid "2023-08-11"
-msgstr "2023-08-11"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_statement
-msgid "2023-08-15"
-msgstr "2023-08-15"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_statement
-msgid "2023-08-31"
-msgstr "2023-08-31"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_invoice_document
-msgid "2023-09-12"
-msgstr "2023-09-12"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_invoice_document
-msgid "2023-09-25"
-msgstr "2023-09-25"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_invoice_document
-msgid "2023-10-31"
-msgstr "2023-10-31"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_invoice_document
-msgid "2024-01-01"
-msgstr "2024-01-01"
 
 #. module: account
 #: model:account.payment.term,name:account.account_payment_term_21days
@@ -580,18 +482,6 @@ msgid "25.00 USD"
 msgstr "25.00 USD"
 
 #. module: account
-#: model_terms:ir.ui.view,arch_db:account.document_tax_totals_company_currency_template
-#: model_terms:ir.ui.view,arch_db:account.document_tax_totals_template
-#: model_terms:ir.ui.view,arch_db:account.report_invoice_document
-msgid "27.00"
-msgstr "27.00"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_invoice_document
-msgid "3.00"
-msgstr "3.00"
-
-#. module: account
 #: model:account.payment.term,name:account.account_payment_term_30days
 msgid "30 Days"
 msgstr "30日以内"
@@ -607,99 +497,9 @@ msgid "30% Now, Balance 60 Days"
 msgstr "まずは30%、残りは60日以内"
 
 #. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_invoice_document
-msgid "30.00"
-msgstr "30.00"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.document_tax_totals_company_currency_template
-#: model_terms:ir.ui.view,arch_db:account.document_tax_totals_template
-#: model_terms:ir.ui.view,arch_db:account.report_invoice_document
-msgid "31.05"
-msgstr "31.05"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.document_tax_totals_company_currency_template
-#: model_terms:ir.ui.view,arch_db:account.document_tax_totals_template
-msgid "4.05"
-msgstr "4.05"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_4_2
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_4_2
-#: model:account.tax,name:account.2_account_tax_us_purchase_4_2
-#: model:account.tax,name:account.2_account_tax_us_sale_4_2
-msgid "4.2%"
-msgstr "4.2%"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_4_225
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_4_225
-#: model:account.tax,name:account.2_account_tax_us_purchase_4_225
-#: model:account.tax,name:account.2_account_tax_us_sale_4_225
-msgid "4.225%"
-msgstr "4.225%"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_4_5
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_4_5
-#: model:account.tax,name:account.2_account_tax_us_purchase_4_5
-#: model:account.tax,name:account.2_account_tax_us_sale_4_5
-msgid "4.5%"
-msgstr "4.5%"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_4_75
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_4_75
-#: model:account.tax,name:account.2_account_tax_us_purchase_4_75
-#: model:account.tax,name:account.2_account_tax_us_sale_4_75
-msgid "4.75%"
-msgstr "4.75%"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_4_875
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_4_875
-#: model:account.tax,name:account.2_account_tax_us_purchase_4_875
-#: model:account.tax,name:account.2_account_tax_us_sale_4_875
-msgid "4.875%"
-msgstr "4.875%"
-
-#. module: account
 #: model:account.payment.term,name:account.account_payment_term_45days
 msgid "45 Days"
 msgstr "45日以内"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_5_3
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_5_3
-#: model:account.tax,name:account.2_account_tax_us_purchase_5_3
-#: model:account.tax,name:account.2_account_tax_us_sale_5_3
-msgid "5.3%"
-msgstr "5.3%"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_5_5
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_5_5
-#: model:account.tax,name:account.2_account_tax_us_purchase_5_5
-#: model:account.tax,name:account.2_account_tax_us_sale_5_5
-msgid "5.5%"
-msgstr "5.5%"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_5_6
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_5_6
-#: model:account.tax,name:account.2_account_tax_us_purchase_5_6
-#: model:account.tax,name:account.2_account_tax_us_sale_5_6
-msgid "5.6%"
-msgstr "5.6%"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_5_75
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_5_75
-#: model:account.tax,name:account.2_account_tax_us_purchase_5_75
-#: model:account.tax,name:account.2_account_tax_us_sale_5_75
-msgid "5.75%"
-msgstr "5.75%"
 
 #. module: account
 #: model_terms:ir.ui.view,arch_db:account.report_payment_receipt_document
@@ -710,80 +510,6 @@ msgstr "50 USD"
 #: model_terms:ir.ui.view,arch_db:account.report_payment_receipt_document
 msgid "50.00 EUR"
 msgstr "50.00 EUR"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_statement
-msgid "534677881234"
-msgstr "534677881234"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_6_1
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_6_1
-#: model:account.tax,name:account.2_account_tax_us_purchase_6_1
-#: model:account.tax,name:account.2_account_tax_us_sale_6_1
-msgid "6.1%"
-msgstr "6.1%"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_6_25
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_6_25
-#: model:account.tax,name:account.2_account_tax_us_purchase_6_25
-#: model:account.tax,name:account.2_account_tax_us_sale_6_25
-msgid "6.25%"
-msgstr "6.25%"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_6_35
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_6_35
-#: model:account.tax,name:account.2_account_tax_us_purchase_6_35
-#: model:account.tax,name:account.2_account_tax_us_sale_6_35
-msgid "6.35%"
-msgstr "6.35%"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_6_5
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_6_5
-#: model:account.tax,name:account.2_account_tax_us_purchase_6_5
-#: model:account.tax,name:account.2_account_tax_us_sale_6_5
-msgid "6.5%"
-msgstr "6.5%"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_6_625
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_6_625
-#: model:account.tax,name:account.2_account_tax_us_purchase_6_625
-#: model:account.tax,name:account.2_account_tax_us_sale_6_625
-msgid "6.625%"
-msgstr "6.625%"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_6_85
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_6_85
-#: model:account.tax,name:account.2_account_tax_us_purchase_6_85
-#: model:account.tax,name:account.2_account_tax_us_sale_6_85
-msgid "6.85%"
-msgstr "6.85%"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_6_875
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_6_875
-#: model:account.tax,name:account.2_account_tax_us_purchase_6_875
-#: model:account.tax,name:account.2_account_tax_us_sale_6_875
-msgid "6.875%"
-msgstr "6.875%"
-
-#. module: account
-#: model:account.tax,invoice_label:account.2_account_tax_us_purchase_7_25
-#: model:account.tax,invoice_label:account.2_account_tax_us_sale_7_25
-#: model:account.tax,name:account.2_account_tax_us_purchase_7_25
-#: model:account.tax,name:account.2_account_tax_us_sale_7_25
-msgid "7.25%"
-msgstr "7.25%"
-
-#. module: account
-#: model_terms:ir.ui.view,arch_db:account.report_invoice_document
-msgid "9.00"
-msgstr "9.00"
 
 #. module: account
 #: model:account.payment.term,name:account.account_payment_term_90days_on_the_10th
@@ -3350,6 +3076,12 @@ msgid "Accumulated Depreciation"
 msgstr "減価償却累計額"
 
 #. module: account
+#: model:account.account,name:account.1_retained_earnings
+#: model:account.account,name:account.2_account_account_us_retained_earnings
+msgid "Accumulated Retained Earnings"
+msgstr ""
+
+#. module: account
 #: model:ir.model.fields,field_description:account.field_account_automatic_entry_wizard__action
 #: model:ir.model.fields,field_description:account.field_account_report_line__action_id
 msgid "Action"
@@ -4256,6 +3988,11 @@ msgstr ""
 "ます。"
 
 #. module: account
+#: model:account.account,description:account.2_account_account_us_profit_or_loss_appropriation
+msgid "Appropriation of the profit or loss"
+msgstr ""
+
+#. module: account
 #: model:ir.model.fields.selection,name:account.selection__res_company__fiscalyear_last_month__4
 msgid "April"
 msgstr "4月"
@@ -4616,8 +4353,8 @@ msgstr "残高割合が0になることはありません"
 #. odoo-python
 #: code:addons/account/models/account_journal.py:0
 #: code:addons/account/models/chart_template.py:0
-#: model:account.account,name:account.1_bank_journal_default_account_45
-#: model:account.account,name:account.2_bank_journal_default_account_150
+#: model:account.account,name:account.1_bank_journal_default_account_47
+#: model:account.account,name:account.2_bank_journal_default_account_153
 #: model:account.journal,name:account.1_bank
 #: model:account.journal,name:account.2_bank
 #: model:ir.model.fields,field_description:account.field_account_journal__bank_id
@@ -5165,6 +4902,12 @@ msgstr ""
 
 #. module: account
 #. odoo-python
+#: code:addons/account/wizard/account_automatic_entry_wizard.py:0
+msgid "C"
+msgstr ""
+
+#. module: account
+#. odoo-python
 #: code:addons/account/models/chart_template.py:0
 msgid "CABA"
 msgstr "CABA"
@@ -5367,7 +5110,7 @@ msgstr "以下へ繰越す："
 #. module: account
 #. odoo-python
 #: code:addons/account/models/account_journal.py:0
-#: model:account.account,name:account.1_cash_journal_default_account_161
+#: model:account.account,name:account.1_cash_journal_default_account_163
 #: model:ir.model.fields.selection,name:account.selection__account_journal__type__cash
 #: model_terms:ir.ui.view,arch_db:account.view_account_move_filter
 #: model_terms:ir.ui.view,arch_db:account.view_account_move_line_filter
@@ -5380,12 +5123,12 @@ msgid "Cash Account"
 msgstr "現金アカウント"
 
 #. module: account
-#: model:account.account,name:account.1_cash_journal_default_account_158
+#: model:account.account,name:account.1_cash_journal_default_account_160
 msgid "Cash Bakery"
 msgstr "現金 ベーカリー"
 
 #. module: account
-#: model:account.account,name:account.1_cash_journal_default_account_160
+#: model:account.account,name:account.1_cash_journal_default_account_162
 msgid "Cash Bar"
 msgstr "現金バー"
 
@@ -5427,7 +5170,7 @@ msgid "Cash Basis Transition Account"
 msgstr "現金基準移行勘定"
 
 #. module: account
-#: model:account.account,name:account.1_cash_journal_default_account_157
+#: model:account.account,name:account.1_cash_journal_default_account_159
 msgid "Cash Clothes Shop"
 msgstr "現金 洋服店"
 
@@ -5489,7 +5232,7 @@ msgid "Cash Discount Write-Off Loss Account"
 msgstr "現金値引損償却口座"
 
 #. module: account
-#: model:account.account,name:account.1_cash_journal_default_account_156
+#: model:account.account,name:account.1_cash_journal_default_account_158
 msgid "Cash Furn. Shop"
 msgstr "現金 家具屋"
 
@@ -5500,7 +5243,7 @@ msgid "Cash Registers"
 msgstr "キャッシュレジスタ"
 
 #. module: account
-#: model:account.account,name:account.1_cash_journal_default_account_159
+#: model:account.account,name:account.1_cash_journal_default_account_161
 msgid "Cash Restaurant"
 msgstr "現金レストラン"
 
@@ -6712,6 +6455,11 @@ msgid ""
 msgstr "ドメインとビューで選択された順番に応じた累積残高。"
 
 #. module: account
+#: model:account.account,description:account.2_account_account_us_retained_earnings
+msgid "Cumulative undistributed profits and losses"
+msgstr ""
+
+#. module: account
 #: model:ir.ui.menu,name:account.menu_action_currency_form
 #: model_terms:ir.ui.view,arch_db:account.res_config_settings_view_form
 msgid "Currencies"
@@ -6988,6 +6736,12 @@ msgstr "カットオフ {label}"
 #: code:addons/account/wizard/account_automatic_entry_wizard.py:0
 msgid "Cut-off {label} {percent}%"
 msgstr "カットオフ {label} {percent}%"
+
+#. module: account
+#. odoo-python
+#: code:addons/account/wizard/account_automatic_entry_wizard.py:0
+msgid "D"
+msgstr ""
 
 #. module: account
 #: model:account.incoterms,name:account.incoterm_DAP
@@ -7549,7 +7303,7 @@ msgstr "マージボタンを無効化"
 #: model:ir.model.fields.selection,name:account.selection__account_report__filter_account_type__disabled
 #: model_terms:ir.ui.view,arch_db:account.res_config_settings_view_form
 msgid "Disabled"
-msgstr "無効にします"
+msgstr "無効"
 
 #. module: account
 #: model_terms:ir.ui.view,arch_db:account.view_move_form
@@ -10252,7 +10006,7 @@ msgstr "支払処理中"
 #: model:ir.model.fields.selection,name:account.selection__account_payment__state__in_process
 #: model_terms:ir.ui.view,arch_db:account.view_account_payment_search
 msgid "In Process"
-msgstr "プロセス中"
+msgstr "処理中"
 
 #. module: account
 #: model_terms:ir.ui.view,arch_db:account.account_default_terms_and_conditions
@@ -11096,6 +10850,12 @@ msgstr "編集者である"
 #: model:ir.model.fields,field_description:account.field_validate_account_move__is_entries
 msgid "Is Entries"
 msgstr "複数仕訳"
+
+#. module: account
+#: model:ir.model.fields,field_description:account.field_account_bank_statement_line__is_exact_move_duplicate
+#: model:ir.model.fields,field_description:account.field_account_move__is_exact_move_duplicate
+msgid "Is Exact Move Duplicate"
+msgstr ""
 
 #. module: account
 #: model:ir.model.fields,field_description:account.field_account_account__message_is_follower
@@ -12649,6 +12409,12 @@ msgid "Need Cancel Request"
 msgstr "要求をキャンセルする必要があります"
 
 #. module: account
+#. odoo-python
+#: code:addons/account/models/chart_template.py:0
+msgid "Need to update"
+msgstr ""
+
+#. module: account
 #: model:ir.model.fields,field_description:account.field_account_bank_statement_line__needed_terms
 #: model:ir.model.fields,field_description:account.field_account_move__needed_terms
 msgid "Needed Terms"
@@ -13462,7 +13228,7 @@ msgstr "並び順"
 #: model:ir.model.fields,field_description:account.field_account_bank_statement_line__invoice_origin
 #: model:ir.model.fields,field_description:account.field_account_move__invoice_origin
 msgid "Origin"
-msgstr "移動元"
+msgstr "参照元"
 
 #. module: account
 #: model:ir.model.fields,field_description:account.field_account_report_external_value__carryover_origin_expression_label
@@ -14116,7 +13882,7 @@ msgstr "支払タイプ"
 #. module: account
 #: model_terms:ir.ui.view,arch_db:account.view_move_form
 msgid "Payment terms"
-msgstr "支払期限"
+msgstr "支払条件"
 
 #. module: account
 #: model_terms:account.payment.term,note:account.account_payment_term_30_days_end_month_the_10
@@ -14698,6 +14464,14 @@ msgid "Profit Account"
 msgstr "収益勘定"
 
 #. module: account
+#. odoo-python
+#: code:addons/account/models/company.py:0
+#: model:account.account,name:account.1_profit_or_loss
+#: model:account.account,name:account.2_account_account_us_profit_or_loss_appropriation
+msgid "Profit or Loss Appropriation"
+msgstr ""
+
+#. module: account
 #: model_terms:ir.ui.view,arch_db:account.report_invoice_document
 msgid "Proforma Credit Note"
 msgstr "仮クレジットノート"
@@ -14889,6 +14663,7 @@ msgstr "クイックエンコード"
 
 #. module: account
 #. odoo-javascript
+#: code:addons/account/static/src/components/many2one_account_account/many2one_account_account.js:0
 #: code:addons/account/static/src/components/many2x_tax_tags/many2x_tax_tags.js:0
 msgid "Quick search: %s"
 msgstr "クイック検索: %s"
@@ -15372,11 +15147,6 @@ msgid "Responsible User"
 msgstr "担当ユーザ"
 
 #. module: account
-#: model:ir.model.fields,help:account.field_account_tax__tax_scope
-msgid "Restrict the use of taxes to a type of product."
-msgstr "指定されたプロダクトタイプへの税の使用を制限します。"
-
-#. module: account
 #: model_terms:ir.ui.view,arch_db:account.report_hash_integrity
 #: model_terms:ir.ui.view,arch_db:account.view_message_tree_audit_log_search
 msgid "Restricted"
@@ -15617,7 +15387,7 @@ msgstr "消込モデルのルール"
 #. module: account
 #: model:ir.model.fields,field_description:account.field_account_bank_statement_line__running_balance
 msgid "Running Balance"
-msgstr "現行残高"
+msgstr "累計残高"
 
 #. module: account
 #: model:ir.model.fields,field_description:account.field_res_config_settings__module_account_iso20022
@@ -15641,7 +15411,7 @@ msgstr "SEPA Direct Debit (SDD)"
 #: model:ir.model.fields,field_description:account.field_res_company__message_has_sms_error
 #: model:ir.model.fields,field_description:account.field_res_partner_bank__message_has_sms_error
 msgid "SMS Delivery error"
-msgstr "SMS送信エラー"
+msgstr "SMS配信エラー"
 
 #. module: account
 #: model_terms:ir.ui.view,arch_db:account.report_invoice_document
@@ -15867,6 +15637,7 @@ msgstr "名前または登録番号を検索..."
 
 #. module: account
 #. odoo-javascript
+#: code:addons/account/static/src/components/many2one_account_account/many2one_account_account.js:0
 #: code:addons/account/static/src/components/many2x_tax_tags/many2x_tax_tags.js:0
 msgid "Search: %s"
 msgstr "検索:%s"
@@ -18422,7 +18193,7 @@ msgstr "会社通貨で表示される仕訳明細の残額。"
 #. odoo-python
 #: code:addons/account/models/account_bank_statement.py:0
 msgid "The running balance (%s) doesn't match the specified ending balance."
-msgstr "残高（%s）が、指定された終了残高と一致しない。"
+msgstr "累計残高（%s）が、指定された終了残高と一致しません。"
 
 #. module: account
 #. odoo-python
@@ -19417,7 +19188,7 @@ msgstr "取引フィード"
 #. module: account
 #: model:ir.model.fields,field_description:account.field_account_bank_statement_line__transaction_type
 msgid "Transaction Type"
-msgstr "トランザクションタイプ"
+msgstr "取引タイプ"
 
 #. module: account
 #: model:ir.ui.menu,name:account.account_transactions_menu
@@ -19574,14 +19345,6 @@ msgstr ""
 #: code:addons/account/models/account_journal.py:0
 msgid "Undefined Yet"
 msgstr "未定義"
-
-#. module: account
-#. odoo-python
-#: code:addons/account/models/company.py:0
-#: model:account.account,name:account.1_unaffected_earnings_account
-#: model:account.account,name:account.2_unaffected_earnings_account
-msgid "Undistributed Profits/Losses"
-msgstr "未分配損益"
 
 #. module: account
 #: model:account.account,name:account.2_account_account_us_unemployment_insurance
@@ -19783,6 +19546,12 @@ msgstr "条件の更新"
 #: code:addons/account/models/res_config_settings.py:0
 msgid "Update Terms & Conditions"
 msgstr "取引条件を更新"
+
+#. module: account
+#. odoo-python
+#: code:addons/account/models/chart_template.py:0
+msgid "Update app"
+msgstr ""
 
 #. module: account
 #: model_terms:ir.ui.view,arch_db:account.res_config_settings_view_form
@@ -20797,6 +20566,14 @@ msgstr "税レポートに影響を与えるため、税目を削除すること
 #: code:addons/account/models/account_move_line.py:0
 msgid "You cannot delete journal items belonging to a locked journal entry."
 msgstr "ロックされた仕訳帳の仕訳明細は削除できません。"
+
+#. module: account
+#. odoo-python
+#: code:addons/account/models/account_tax.py:0
+msgid ""
+"You cannot delete taxes that are currently in use. Consider archiving them "
+"instead."
+msgstr ""
 
 #. module: account
 #. odoo-python
@@ -21901,6 +21678,144 @@ msgid ""
 msgstr ""
 "{{ object.company_id.name }} Self-billing請求書 (参照番号 {{ object.name or "
 "'n/a' }})"
+
+#~ msgid "Undistributed Profits/Losses"
+#~ msgstr "未分配損益"
+
+#~ msgid "1.00"
+#~ msgstr "1.00"
+
+#~ msgid "1.05"
+#~ msgstr "1.05"
+
+#~ msgid "100.0"
+#~ msgstr "100.0"
+
+#~ msgid "1000.0"
+#~ msgstr "1000.0"
+
+#~ msgid "11.05"
+#~ msgstr "11.05"
+
+#~ msgid "12345"
+#~ msgstr "12345"
+
+#~ msgid "15%"
+#~ msgstr "15%"
+
+#~ msgid "1500.0"
+#~ msgstr "1500.0"
+
+#~ msgid "2.9%"
+#~ msgstr "2.9%"
+
+#~ msgid "20.00"
+#~ msgstr "20.00"
+
+#~ msgid "2021-09-19"
+#~ msgstr "2021-09-19"
+
+#~ msgid "2023-01-01"
+#~ msgstr "2023-01-01"
+
+#~ msgid "2023-01-05"
+#~ msgstr "2023-01-05"
+
+#~ msgid "2023-08-11"
+#~ msgstr "2023-08-11"
+
+#~ msgid "2023-08-15"
+#~ msgstr "2023-08-15"
+
+#~ msgid "2023-08-31"
+#~ msgstr "2023-08-31"
+
+#~ msgid "2023-09-12"
+#~ msgstr "2023-09-12"
+
+#~ msgid "2023-09-25"
+#~ msgstr "2023-09-25"
+
+#~ msgid "2023-10-31"
+#~ msgstr "2023-10-31"
+
+#~ msgid "2024-01-01"
+#~ msgstr "2024-01-01"
+
+#~ msgid "27.00"
+#~ msgstr "27.00"
+
+#~ msgid "3.00"
+#~ msgstr "3.00"
+
+#~ msgid "30.00"
+#~ msgstr "30.00"
+
+#~ msgid "31.05"
+#~ msgstr "31.05"
+
+#~ msgid "4.05"
+#~ msgstr "4.05"
+
+#~ msgid "4.2%"
+#~ msgstr "4.2%"
+
+#~ msgid "4.225%"
+#~ msgstr "4.225%"
+
+#~ msgid "4.5%"
+#~ msgstr "4.5%"
+
+#~ msgid "4.75%"
+#~ msgstr "4.75%"
+
+#~ msgid "4.875%"
+#~ msgstr "4.875%"
+
+#~ msgid "5.3%"
+#~ msgstr "5.3%"
+
+#~ msgid "5.5%"
+#~ msgstr "5.5%"
+
+#~ msgid "5.6%"
+#~ msgstr "5.6%"
+
+#~ msgid "5.75%"
+#~ msgstr "5.75%"
+
+#~ msgid "534677881234"
+#~ msgstr "534677881234"
+
+#~ msgid "6.1%"
+#~ msgstr "6.1%"
+
+#~ msgid "6.25%"
+#~ msgstr "6.25%"
+
+#~ msgid "6.35%"
+#~ msgstr "6.35%"
+
+#~ msgid "6.5%"
+#~ msgstr "6.5%"
+
+#~ msgid "6.625%"
+#~ msgstr "6.625%"
+
+#~ msgid "6.85%"
+#~ msgstr "6.85%"
+
+#~ msgid "6.875%"
+#~ msgstr "6.875%"
+
+#~ msgid "7.25%"
+#~ msgstr "7.25%"
+
+#~ msgid "9.00"
+#~ msgstr "9.00"
+
+#~ msgid "Restrict the use of taxes to a type of product."
+#~ msgstr "指定されたプロダクトタイプへの税の使用を制限します。"
 
 #~ msgid "(*) Goods Delivered not Invoiced (perpetual valuation)"
 #~ msgstr "(*) 納品済未請求品 (継続的評価)"
