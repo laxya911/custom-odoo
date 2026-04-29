@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Remove Odoo branding from the website footer -->
+    <template id="brand_promotion_debrand" inherit_id="website.brand_promotion">
+        <xpath expr="." position="replace">
+            <t t-name="website.brand_promotion"></t>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="digest_mail_main_debrand" inherit_id="digest.digest_mail_main">
+        <!-- Replaces 'Sent by Odoo' with 'Sent by [Company Name]' -->
+        <!-- This safely preserves the Unsubscribe link that sits next to it -->
+        <xpath expr="//a[contains(@href, 'odoo.com')]" position="replace">
+            <span style="color: #875A7B;">
+                <t t-out="company.name"/>
+            </span>
+        </xpath>
+    </template>
+</odoo>

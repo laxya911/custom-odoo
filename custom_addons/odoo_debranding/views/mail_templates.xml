@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="mail_notification_layout_debrand" inherit_id="mail.mail_notification_layout">
+        <!-- Replaces the Odoo promotional links in emails with the company's custom report footer -->
+        <!-- Using a broad XPath to catch the typical footer block containing Odoo links -->
+        <xpath expr="//a[contains(@href, 'odoo.com')]/.." position="replace">
+            <div class="text-muted text-center mt-4">
+                <t t-if="company and company.report_footer">
+                    <span t-out="company.report_footer"/>
+                </t>
+            </div>
+        </xpath>
+    </template>
+    
+    <!-- Try to catch mail_notification_light if it has a separate odoo.com link -->
+    <template id="mail_notification_light_debrand" inherit_id="mail.mail_notification_light">
+        <xpath expr="//a[contains(@href, 'odoo.com')]/.." position="replace">
+            <div class="text-muted text-center mt-4">
+                <t t-if="company and company.report_footer">
+                    <span t-out="company.report_footer"/>
+                </t>
+            </div>
+        </xpath>
+    </template>
+</odoo>
