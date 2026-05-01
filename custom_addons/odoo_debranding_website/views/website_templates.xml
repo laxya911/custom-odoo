@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Remove Odoo branding from the website footer -->
+    <!-- DEPRECATED: This breaks website_sale in Odoo 19. The base odoo_debranding already hides the message.
     <template id="brand_promotion_debrand" inherit_id="website.brand_promotion">
-        <xpath expr="." position="replace">
-            <t t-name="website.brand_promotion"></t>
+        <xpath expr="//div[hasclass('o_brand_promotion')]" position="attributes">
+            <attribute name="class" add="d-none" separator=" "/>
         </xpath>
     </template>
+    -->
 </odoo>

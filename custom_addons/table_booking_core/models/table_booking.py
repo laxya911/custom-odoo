@@ -104,7 +104,8 @@ class TableBooking(models.Model):
             
             # Use native Odoo notification pattern
             try:
-                config._notify('TABLE_BOOKING_NEW', payload)
+                channel = config._get_bus_channel()
+                self.env['bus.bus']._sendone(channel, 'TABLE_BOOKING_NEW', payload)
                 _logger.info("Sent TABLE_BOOKING_NEW notification for booking %s", record.name)
             except Exception as e:
                 _logger.error("Failed to notify POS for booking %s: %s", record.name, str(e))

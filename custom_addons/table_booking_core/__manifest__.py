@@ -8,7 +8,7 @@
         slot generation for online table bookings.
     """,
     'author': 'Geotek',
-    'depends': ['point_of_sale', 'pos_order_api', 'mail'],
+    'depends': ['point_of_sale', 'pos_restaurant', 'pos_order_api', 'mail'],
     'data': [
         'security/ir.model.access.csv',
         'data/sequence.xml',
