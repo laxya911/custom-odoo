@@ -296,7 +296,7 @@ jobs:
       contents: read
 
     env:
-      VPS_PATH: ${{ vars.VPS_PATH || '/home/odoouser/odoo' }}
+      VPS_PATH: ${{ vars.VPS_PATH || '/opt/docker/apps/odoo' || '/home/odoouser/odoo' }}
 
     steps:
       - name: Validate VPS secrets
@@ -321,7 +321,7 @@ jobs:
           echo "🚀 Deploying to VPS (${{ secrets.VPS_HOST }})"
 
           # Use the image built from the feature branch
-          TAG_NAME="feature-odoo-uber"
+          TAG_NAME="latest"
           VPS_PATH="${{ env.VPS_PATH }}"
 
           echo "Using VPS_PATH=$VPS_PATH, TAG_NAME=$TAG_NAME"
