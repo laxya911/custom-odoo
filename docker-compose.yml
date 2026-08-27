@@ -125,8 +125,8 @@ services:
   # Odoo Application
   # ===========================================================================
   odoo:
-    image: ghcr.io/laxya911/custom-odoo:feature-odoo-uber
-    container_name: odoo_uber
+    image: ghcr.io/laxya911/custom-odoo:latest
+    container_name: odoo
     restart: unless-stopped
 
     depends_on:
