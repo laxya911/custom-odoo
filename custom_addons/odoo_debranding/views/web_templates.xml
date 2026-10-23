@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Remove Odoo branding from backend and report footers -->
+    <template id="brand_promotion_message_debrand" inherit_id="web.brand_promotion_message">
+        <xpath expr="." position="replace">
+            <t t-name="web.brand_promotion_message"></t>
+        </xpath>
+    </template>
+</odoo>

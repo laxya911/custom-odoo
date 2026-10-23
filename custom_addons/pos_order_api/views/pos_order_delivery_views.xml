@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Filtered Tree View for Delivery Orders -->
+    <record id="view_pos_order_tree_delivery" model="ir.ui.view">
+        <field name="name">pos.order.tree.delivery</field>
+        <field name="model">pos.order</field>
+        <field name="arch" type="xml">
+            <list string="Delivery Orders" decoration-info="delivery_status == 'received'" decoration-warning="delivery_status in ('preparing', 'ready')" decoration-success="delivery_status == 'delivered'" decoration-danger="delivery_status == 'cancelled'">
+                <field name="name"/>
+                <field name="pos_reference"/>
+                <field name="partner_id"/>
+                <field name="date_order"/>
+                <field name="api_customer_name" string="Customer (API)"/>
+                <field name="api_source"/>
+                <field name="delivery_status" widget="badge" decoration-info="delivery_status == 'received'" decoration-warning="delivery_status in ('preparing', 'ready')" decoration-success="delivery_status == 'delivered'"/>
+                <field name="amount_total" sum="Total" widget="monetary"/>
+                <field name="state" widget="badge" decoration-success="state in ('paid', 'invoiced')" decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Inherited Form View to add Status Actions -->
+    <record id="view_pos_order_form_delivery_inherit" model="ir.ui.view">
+        <field name="name">pos.order.form.delivery.inherit</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="update_delivery_status" string="Start Preparing" type="object" 
+                        class="oe_highlight" invisible="delivery_status != 'received'"
+                        context="{'new_status': 'preparing'}"/>
+                <button name="update_delivery_status" string="Mark Ready" type="object" 
+                        class="oe_highlight" invisible="delivery_status != 'preparing'"
+                        context="{'new_status': 'ready'}"/>
+                <button name="update_delivery_status" string="Out for Delivery" type="object" 
+                        class="oe_highlight" invisible="delivery_status != 'ready'"
+                        context="{'new_status': 'on_the_way'}"/>
+                <button name="update_delivery_status" string="Delivered" type="object" 
+                        class="oe_highlight" invisible="delivery_status != 'on_the_way'"
+                        context="{'new_status': 'delivered'}"/>
+            </xpath>
+            <xpath expr="//field[@name='pos_reference']" position="after">
+                <field name="delivery_status" readonly="1" widget="statusbh"/>
+            </xpath>
+            <xpath expr="//page[@name='extra']" position="after">
+                <page string="Delivery Info" invisible="not is_api_order">
+                    <group>
+                        <group>
+                            <field name="api_source"/>
+                            <field name="api_customer_name"/>
+                            <field name="api_customer_phone"/>
+                        </group>
+                        <group>
+                            <field name="api_delivery_address"/>
+                            <field name="api_order_notes"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action for Delivery Orders -->
+    <record id="action_pos_order_delivery" model="ir.actions.act_window">
+        <field name="name">Delivery Orders</field>
+        <field name="res_model">pos.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('is_api_order', '=', True)]</field>
+        <field name="context">{'search_default_delivery_status_received': 1}</field>
+        <field name="view_id" ref="view_pos_order_tree_delivery"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No delivery orders found.
+            </p>
+            <p>
+                Orders from the website and delivery aggregators will appear here.
+            </p>
+        </field>
+    </record>
+</odoo>

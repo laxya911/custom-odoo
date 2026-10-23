@@ -1,0 +1,21 @@
+{
+    'name': 'POS Aggregator Gateway',
+    'version': '19.0.1.0.2',
+    'category': 'Point of Sale',
+    'author': 'Laxya',
+    'summary': 'Webhook Gateway for UberEats and DoorDash',
+    'description': """
+        Receives Webhooks from Delivery Aggregators.
+        - Normalizes JSON payloads.
+        - Maps external IDs to Odoo IDs.
+        - Calls pos_order_api to create orders.
+    """,
+    'depends': ['pos_order_api', 'pos_remote_print'],
+    'data': [
+        'security/ir.model.access.csv',
+        'views/aggregator_config_views.xml',
+    ],
+    'installable': True,
+    'application': True,
+    'license': 'OPL-1',
+}

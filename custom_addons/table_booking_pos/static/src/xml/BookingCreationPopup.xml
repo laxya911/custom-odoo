@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="table_booking_pos.BookingCreationPopup" owl="1">
+        <Dialog title="'New Table Reservation'" size="'lg'">
+            <div class="row g-3">
+                <!-- Error Alert -->
+                <div t-if="state.error" class="col-12">
+                    <div class="alert alert-danger mb-3 py-2 shadow-sm d-flex align-items-center">
+                        <i class="fa fa-exclamation-triangle me-2" />
+                        <span t-esc="state.error" />
+                    </div>
+                </div>
+
+                <!-- Customer Section -->
+                <div class="col-12 border-bottom pb-2 mb-2">
+                    <label class="fw-bold text-muted small text-uppercase">Customer Information</label>
+                    <div class="row mt-2">
+                        <div class="col-6">
+                            <label class="small text-muted">Name</label>
+                            <div class="input-group">
+                                <input class="form-control rounded-start-pill border-0 shadow-sm" type="text" t-model="state.customerName" placeholder="Full name" />
+                                <button class="btn btn-primary rounded-end-pill shadow-sm" t-on-click="selectPartner">
+                                    <i class="fa fa-search" />
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="small text-muted">Phone</label>
+                            <input class="form-control rounded-pill border-0 shadow-sm" type="text" t-model="state.customerPhone" placeholder="Phone number" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Details Section -->
+                <div class="col-6">
+                    <label class="fw-bold text-muted small text-uppercase">Date</label>
+                    <input class="form-control rounded-pill border-0 shadow-sm mt-1" type="date" t-model="state.date" />
+                </div>
+                <div class="col-6">
+                    <label class="fw-bold text-muted small text-uppercase">Time</label>
+                    <input class="form-control rounded-pill border-0 shadow-sm mt-1" type="time" t-model="state.time" />
+                </div>
+
+                <div class="col-12 mt-3">
+                    <label class="fw-bold text-muted small text-uppercase">Party Size</label>
+                    <div class="d-flex align-items-center mt-1">
+                        <button class="btn btn-outline-secondary rounded-circle" t-on-click="() => state.partySize = Math.max(1, state.partySize - 1)" style="width: 32px; height: 32px; line-height: 20px;">-</button>
+                        <input class="form-control text-center mx-2 border-0 shadow-sm fw-bold" type="number" t-model="state.partySize" style="width: 60px;" />
+                        <button class="btn btn-outline-secondary rounded-circle" t-on-click="() => state.partySize = state.partySize + 1" style="width: 32px; height: 32px; line-height: 20px;">+</button>
+                        <span class="ms-3 text-muted">people</span>
+                    </div>
+                </div>
+
+                <!-- Resource Selection Section -->
+                <div class="col-12 mt-3">
+                    <label class="fw-bold text-muted small text-uppercase">Select Tables</label>
+                    <div class="table-resource-grid d-flex flex-wrap gap-2 mt-2 py-2">
+                        <t t-foreach="state.availableResources" t-as="resource" t-key="resource.id">
+                            <div t-attf-class="resource-badge btn rounded-pill px-3 py-2 border {{ state.tableIds.includes(resource.id) ? 'btn-primary border-primary shadow-sm' : 'btn-light border-secondary-subtle text-muted' }}" 
+                                 t-on-click="() => this.toggleTable(resource.id)">
+                                <i class="fa fa-cutlery me-1" />
+                                <span t-esc="resource.name" />
+                                <span class="ms-1 small opacity-75">(<t t-esc="resource.capacity" />p)</span>
+                            </div>
+                        </t>
+                        <t t-if="!state.availableResources.length">
+                            <span class="text-muted small italic">No booking tables found.</span>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Notes Section -->
+                <div class="col-12 mt-3">
+                    <label class="fw-bold text-muted small text-uppercase">Special Requests / Notes</label>
+                    <textarea class="form-control rounded-4 border-0 shadow-sm mt-1" rows="2" t-model="state.notes" placeholder="e.g. Birthday celebration, window seat..."></textarea>
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <button class="btn btn-lg btn-light border px-4 me-2 rounded-pill shadow-sm" t-on-click="props.close">
+                    <i class="fa fa-times me-2" />Cancel
+                </button>
+                <button class="btn btn-lg btn-primary px-5 rounded-pill shadow-sm" t-on-click="confirm" t-att-disabled="state.isLoading">
+                    <t t-if="state.isLoading">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Working...
+                    </t>
+                    <t t-else="">
+                        <i class="fa fa-check me-2" />Confirm Reservation
+                    </t>
+                </button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

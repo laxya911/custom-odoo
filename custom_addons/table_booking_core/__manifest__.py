@@ -1,0 +1,24 @@
+{
+    'name': 'Table Booking Core',
+    'version': '19.0.1.0.0',
+    'category': 'Sales/POS',
+    'summary': 'Core logic for Online Table Booking System',
+    'description': """
+        Handles table resources, booking configurations, and collision-proof 
+        slot generation for online table bookings.
+    """,
+    'author': 'Geotek',
+    'depends': ['point_of_sale', 'pos_restaurant', 'pos_order_api', 'mail'],
+    'data': [
+        'security/ir.model.access.csv',
+        'data/sequence.xml',
+        'views/table_booking_config_views.xml',
+        'views/table_resource_views.xml',
+        'views/table_booking_views.xml',
+        'views/table_booking_search_views.xml',
+        'views/menu_items.xml',
+    ],
+    'installable': True,
+    'application': False,
+    'license': 'OPL-1',
+}

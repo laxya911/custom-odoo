@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="point_of_sale.Navbar" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('navbar-menu')]" position="inside">
+            <div t-if="pos.config.module_pos_restaurant"
+                 class="btn btn-light border-0 d-flex align-items-center px-4 nav-link-custom" 
+                 t-att-class="{ 'active bg-view text-primary shadow-sm': pos.mainScreen.component === 'BookingsScreen' }"
+                 t-on-click="onBookingsClick">
+                <i class="fa fa-calendar-check-o me-2" role="img" aria-label="Bookings" title="Bookings" />
+                <span class="fw-bold">Bookings</span>
+            </div>
+        </xpath>
+    </t>
+</templates>

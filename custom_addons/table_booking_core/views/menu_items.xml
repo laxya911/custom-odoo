@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <menuitem id="menu_table_booking_root" 
+                  name="Bookings" 
+                  web_icon="table_booking_core,static/description/icon.png"
+                  sequence="10"/>
+
+        <menuitem id="menu_table_booking_all" 
+                  name="All Bookings" 
+                  parent="menu_table_booking_root" 
+                  action="action_table_booking" 
+                  sequence="10"/>
+
+        <menuitem id="menu_table_booking_config_root" 
+                  name="Configuration" 
+                  parent="menu_table_booking_root" 
+                  sequence="100"/>
+
+        <menuitem id="menu_table_booking_config" 
+                  name="Settings" 
+                  parent="menu_table_booking_config_root" 
+                  action="action_table_booking_config" 
+                  sequence="10"/>
+
+        <menuitem id="menu_table_resource" 
+                  name="Booking Tables" 
+                  parent="menu_table_booking_config_root" 
+                  action="action_table_resource" 
+                  sequence="20"/>
+    </data>
+</odoo>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="pos_restaurant.FloorScreen" t-inherit-mode="extension" owl="1">
+        <!-- Add indicators inside the table but ensure they don't block clicks -->
+        <xpath expr="//div[hasclass('floor-table') or hasclass('table-obj')]" position="inside">
+            <t t-if="state.tableBookings and state.tableBookings[table.id]">
+                <!-- Background overlay for booked status -->
+                <div class="booking-bg-overlay" 
+                     t-attf-style="position: absolute; top:0; left:0; width:100%; height:100%; border-radius: inherit; background: {{ state.tableBookings[table.id].status === 'checked_in' ? 'rgba(76, 175, 80, 0.7)' : 'rgba(255, 193, 7, 0.7)' }}; z-index: 0; pointer-events: none;" />
+                
+                <!-- Badge for reservation -->
+                <div class="booking-indicators" style="pointer-events: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5;">
+                    <div class="booking-badge-pos" 
+                         t-attf-style="position: absolute; top: -10px; right: -10px; background: {{ state.tableBookings[table.id].status === 'checked_in' ? '#2E7D32' : '#E65100' }}; color: white; border-radius: 50%; width: 24px; height: 24px; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                        <i class="fa fa-calendar-check-o" />
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>

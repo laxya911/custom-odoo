@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_form_view_seo" model="ir.ui.view">
+        <field name="name">product.template.form.seo</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general_information']" position="inside">
+                <group name="seo" string="SEO">
+                    <field name="meta_title" placeholder="e.g. Premium Wireless Headphones"/>
+                    <field name="meta_description" placeholder="e.g. Buy the best wireless headphones with noise cancellation..."/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
