@@ -1,7 +1,7 @@
 /** @odoo-module */
 
 import { Navbar } from "@point_of_sale/app/components/navbar/navbar";
-import { Component, useState } from "@odoo/owl";
+import { Component, proxy } from "@odoo/owl";
 import { usePos } from "@point_of_sale/app/hooks/pos_hook";
 import { useService } from "@web/core/utils/hooks";
 import { patch } from "@web/core/utils/patch";
@@ -14,20 +14,12 @@ import { BookingCreationPopup } from "@table_booking_pos/js/BookingCreationPopup
 export class BookingsScreen extends Component {
     static storeOnOrder = false;
     static template = "table_booking_pos.BookingsScreen";
-    static props = {
-        title: { type: String, optional: true },
-        key: { type: String, optional: true },
-        bookings: { type: Array, optional: true },
-        close: { type: Function, optional: true },
-        confirm: { type: Function, optional: true },
-        cancel: { type: Function, optional: true },
-    };
 
     setup() {
         this.pos = usePos();
         this.ui = useService("ui");
         this.dialog = useService("dialog");
-        this.state = useState({
+        this.state = proxy({
             bookings: [],
             isLoading: false,
             searchWord: "",
@@ -167,7 +159,7 @@ registry.category("pos_pages").add("BookingsScreen", {
 // 3. Patch the Navbar
 patch(Navbar.prototype, {
     get mainButton() {
-        if (this.pos.mainScreen.component === 'BookingsScreen') {
+        if (this.pos.router?.currentScreen() === 'BookingsScreen') {
             return 'bookings';
         }
         return super.mainButton;

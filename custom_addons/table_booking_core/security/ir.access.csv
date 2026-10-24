@@ -1,0 +1,7 @@
+id,name,model_id,group_id/id,operation,domain
+access_table_booking_config_user,table.booking.config user,table.booking.config,point_of_sale.group_pos_user,cru,
+access_table_booking_config_manager,table.booking.config manager,table.booking.config,point_of_sale.group_pos_manager,crud,
+access_table_resource_user,table.resource user,table.resource,point_of_sale.group_pos_user,crud,
+access_table_booking_user,table.booking user,table.booking,point_of_sale.group_pos_user,crud,
+access_table_booking_period_user,table.booking.period user,table.booking.period,point_of_sale.group_pos_user,crud,
+access_table_booking_period_manager,table.booking.period manager,table.booking.period,point_of_sale.group_pos_manager,crud,

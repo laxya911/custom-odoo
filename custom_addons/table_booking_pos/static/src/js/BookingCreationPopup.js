@@ -1,5 +1,5 @@
 /** @odoo-module */
-import { Component, useState, onWillStart } from "@odoo/owl";
+import { Component, proxy, onWillStart } from "@odoo/owl";
 import { Dialog } from "@web/core/dialog/dialog";
 import { usePos } from "@point_of_sale/app/hooks/pos_hook";
 import { _t } from "@web/core/l10n/translation";
@@ -10,12 +10,17 @@ import { useService } from "@web/core/utils/hooks";
 export class BookingCreationPopup extends Component {
     static template = "table_booking_pos.BookingCreationPopup";
     static components = { Dialog };
-    static props = {
-        partner: { type: [{ value: null }, Object], optional: true },
-        getPayload: { type: Function, optional: true },
-        close: { type: Function },
-        confirm: { type: Function, optional: true },
-    };
+
+    get props() {
+        return this.__owl__?.props || {};
+    }
+
+    get selectedTotalCapacity() {
+        return this.state.tableIds.reduce((total, id) => {
+            const table = this.state.availableResources.find(t => t.id === id);
+            return total + (table?.capacity || 0);
+        }, 0);
+    }
 
     setup() {
         this.pos = usePos();
@@ -25,10 +30,11 @@ export class BookingCreationPopup extends Component {
         const tomorrow = new Date(now);
         tomorrow.setHours(now.getHours() + 1);
         
-        this.state = useState({
-            customerName: this.props.partner?.name || "",
-            customerPhone: this.props.partner?.phone || "",
-            customerEmail: this.props.partner?.email || "",
+        const partner = this.props?.partner;
+        this.state = proxy({
+            customerName: partner?.name || "",
+            customerPhone: partner?.phone || "",
+            customerEmail: partner?.email || "",
             date: now.toISOString().split("T")[0],
             time: `${String(tomorrow.getHours()).padStart(2, '0')}:00`,
             partySize: 2,
@@ -47,25 +53,28 @@ export class BookingCreationPopup extends Component {
 
     async loadConfigAndResources() {
         try {
-            // 1. Find config linked to this POS
+            // Auto-sync POS floor tables to booking resources if needed
+            try {
+                await this.pos.data.call(
+                    "restaurant.table",
+                    "action_sync_booking_resources",
+                    [this.pos.config.id]
+                );
+            } catch (syncErr) {
+                console.warn("Table booking sync warning:", syncErr);
+            }
+
+            // 1. Find active config linked to this POS or generic
             const configs = await this.pos.data.call(
                 "table.booking.config",
                 "search_read",
-                [[["pos_config_id", "=", this.pos.config.id], ["active_booking", "=", true]]],
-                { fields: ["id", "max_party_size"] }
+                [[["active_booking", "=", true]]],
+                { fields: ["id", "name", "max_party_size", "pos_config_id"] }
             );
 
-            if (configs.length > 0) {
-                this.state.configId = configs[0].id;
-            } else {
-                // Fallback: any active config
-                const anyConfig = await this.pos.data.call(
-                    "table.booking.config",
-                    "search_read",
-                    [[["active_booking", "=", true]]],
-                    { fields: ["id"], limit: 1 }
-                );
-                if (anyConfig.length > 0) this.state.configId = anyConfig[0].id;
+            if (configs && configs.length > 0) {
+                const matched = configs.find(c => c.pos_config_id && c.pos_config_id[0] === this.pos.config.id) || configs[0];
+                this.state.configId = matched.id;
             }
 
             // 2. Load tables/resources
@@ -75,7 +84,7 @@ export class BookingCreationPopup extends Component {
                 [[["active", "=", true]]],
                 { fields: ["id", "name", "capacity"] }
             );
-            this.state.availableResources = resources;
+            this.state.availableResources = resources || [];
         } catch (e) {
             console.error("BookingPopup: Error loading metadata", e);
             this.state.error = _t("Failed to load booking configuration.");
@@ -108,7 +117,8 @@ export class BookingCreationPopup extends Component {
                 return total + (table?.capacity || 0);
             }, 0);
 
-            if (selectedCapacity < this.state.partySize) {
+            const partySize = Number(this.state.partySize) || 1;
+            if (selectedCapacity < partySize) {
                 this.state.error = _t("Insufficient capacity. Selected tables only hold %s people.", selectedCapacity);
                 return;
             }
@@ -128,7 +138,7 @@ export class BookingCreationPopup extends Component {
 
             const payload = {
                 config_id: this.state.configId,
-                party_size: this.state.partySize,
+                party_size: partySize,
                 customer: {
                     name: this.state.customerName,
                     phone: this.state.customerPhone,

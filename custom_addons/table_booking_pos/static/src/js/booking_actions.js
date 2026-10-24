@@ -1,13 +1,19 @@
 /** @odoo-module */
 
 import { patch } from "@web/core/utils/patch";
-import { FloorScreen } from "@pos_restaurant/app/screens/floor_screen/floor_screen";
+import { FloorPlan } from "@pos_restaurant/app/screens/floor_screen/floor_plan/floor_plan";
 import { SelectionPopup } from "@point_of_sale/app/components/popups/selection_popup/selection_popup";
+import { useService } from "@web/core/utils/hooks";
 
-patch(FloorScreen.prototype, {
+patch(FloorPlan.prototype, {
+    setup() {
+        super.setup(...arguments);
+        this.dialog = useService("dialog");
+    },
+
     async onClickTable(table, ev) {
         // Intercept table click for bookings
-        if (!this.pos.isEditMode && table.table_resource_id) {
+        if (!this.floorPlanStore?.editMode && table.table_resource_id) {
             const bookings = await this.pos.data.call(
                 "table.booking",
                 "search_read",

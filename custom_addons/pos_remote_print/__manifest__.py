@@ -1,6 +1,6 @@
 {
     'name': 'POS Remote Print',
-    'version': '19.0.1.0.0',
+    'version': '20.0.1.0.0',
     'category': 'Point of Sale',
     'author': 'Laxya',
     'summary': 'Kitchen Printing for Remote Orders',

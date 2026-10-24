@@ -1,6 +1,6 @@
 {
     'name': 'POS Aggregator Gateway',
-    'version': '19.0.1.0.2',
+    'version': '20.0.1.0.0',
     'category': 'Point of Sale',
     'author': 'Laxya',
     'summary': 'Webhook Gateway for UberEats and DoorDash',
@@ -12,7 +12,7 @@
     """,
     'depends': ['pos_order_api', 'pos_remote_print'],
     'data': [
-        'security/ir.model.access.csv',
+        'security/ir.access.csv',
         'views/aggregator_config_views.xml',
     ],
     'installable': True,

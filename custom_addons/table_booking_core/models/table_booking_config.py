@@ -6,7 +6,7 @@ class TableBookingPeriod(models.Model):
     _description = 'Table Booking Service Period'
     _order = 'opening_time asc'
 
-    name = fields.Char(string='Period Name', required=True, placeholder='e.g. Lunch')
+    name = fields.Char(string='Period Name', required=True)
     opening_time = fields.Float(string='Opening Time', default=11.0, required=True)
     closing_time = fields.Float(string='Closing Time', default=14.5, required=True)
     config_id = fields.Many2one('table.booking.config', string='Configuration', ondelete='cascade')

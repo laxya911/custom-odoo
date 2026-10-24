@@ -8,9 +8,10 @@ import { TicketScreen } from "@point_of_sale/app/screens/ticket_screen/ticket_sc
 
 export class DeliveryStatusPanel extends Component {
     static template = "pos_order_api.DeliveryStatusPanel";
-    static props = {
-        order: { type: Object },
-    };
+
+    get props() {
+        return this.__owl__?.props || {};
+    }
 
     setup() {
         this.pos = usePos();
@@ -64,6 +65,4 @@ export class DeliveryStatusPanel extends Component {
 }
 
 // Register the component for use in the TicketScreen
-patch(TicketScreen, {
-    components: { ...TicketScreen.components, DeliveryStatusPanel }
-});
+TicketScreen.components = { ...TicketScreen.components, DeliveryStatusPanel };

@@ -1,16 +1,18 @@
 {
     'name': 'Odoo Debranding',
-    'version': '1.0',
+    'version': '20.0.1.0.0',
     'category': 'Hidden',
-    'summary': 'Removes Odoo branding from emails and reports',
+    'author': 'Custom',
+    'summary': 'Removes Odoo branding from emails, reports, and digests',
     'description': """
-        This module removes 'Powered by Odoo' branding from standard emails and reports.
+        This module removes 'Powered by Odoo' branding from standard emails, reports, and digest emails.
         It dynamically displays the company's report footer instead of the Odoo branding in emails.
     """,
-    'depends': ['web', 'mail'],
+    'depends': ['web', 'mail', 'digest'],
     'data': [
         'views/web_templates.xml',
         'views/mail_templates.xml',
+        'views/digest_templates.xml',
     ],
     'installable': True,
     'application': False,

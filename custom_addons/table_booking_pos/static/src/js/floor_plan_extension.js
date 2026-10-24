@@ -1,12 +1,15 @@
 /** @odoo-module */
 
 import { patch } from "@web/core/utils/patch";
-import { FloorScreen } from "@pos_restaurant/app/screens/floor_screen/floor_screen";
+import { FloorPlan } from "@pos_restaurant/app/screens/floor_screen/floor_plan/floor_plan";
 import { onWillStart } from "@odoo/owl";
 
-patch(FloorScreen.prototype, {
+patch(FloorPlan.prototype, {
     setup() {
         super.setup(...arguments);
+        if (!this.state) {
+            this.state = {};
+        }
         this.state.tableBookings = {};
 
         onWillStart(async () => {
@@ -15,10 +18,12 @@ patch(FloorScreen.prototype, {
     },
 
     async _checkAllBookings() {
-        if (!this.activeTables || this.activeTables.length === 0) return;
+        const floorTables = this.floorPlanStore?.getFloorTables?.() || [];
+        const tables = floorTables.map(t => t.record).filter(Boolean);
+        if (!tables.length) return;
         
-        const resourceIds = this.activeTables.map(t => t.table_resource_id && t.table_resource_id[0]).filter(Boolean);
-        if(!resourceIds.length) return;
+        const resourceIds = tables.map(t => t.table_resource_id && t.table_resource_id[0]).filter(Boolean);
+        if (!resourceIds.length) return;
 
         try {
             const bookings = await this.pos.data.call(
@@ -36,7 +41,7 @@ patch(FloorScreen.prototype, {
             const newTableBookings = {};
             const nowTs = Date.now();
 
-            for (const table of this.activeTables) {
+            for (const table of tables) {
                 if (!table.table_resource_id) continue;
                 const resourceId = table.table_resource_id[0];
                 

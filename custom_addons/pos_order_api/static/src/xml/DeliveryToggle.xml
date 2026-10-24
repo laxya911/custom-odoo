@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
-    <t t-name="pos_order_api.DeliveryToggle" owl="1">
+    <t t-name="pos_order_api.DeliveryToggle">
         <div class="delivery-toggle-button btn btn-light d-flex align-items-center" 
-             t-att-class="{ 'text-success': state.isActive, 'text-danger': !state.isActive }"
-             t-on-click="toggleDelivery">
+             t-att-class="{ 'text-success': this.state.isActive, 'text-danger': !this.state.isActive }"
+             t-on-click="this.toggleDelivery">
             <i class="fa fa-motorcycle me-2" role="img" aria-label="Delivery Toggle" title="Delivery Toggle"/>
             <span class="fw-bold">
-                <t t-out="state.isActive ? 'Delivery: ON' : 'Delivery: OFF'"/>
+                <t t-out="this.state.isActive ? 'Delivery: ON' : 'Delivery: OFF'"/>
             </span>
         </div>
     </t>

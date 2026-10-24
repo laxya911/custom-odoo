@@ -20,3 +20,109 @@
 .booking-indicators {
     pointer-events: none;
 }
+
+/* =========================================
+   Booking Creation Modal Enhancements
+   ========================================= */
+
+.booking-popup-form {
+    font-size: 0.925rem;
+}
+
+.booking-popup-form .card {
+    border-color: #e5e7eb !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    background-color: #ffffff;
+}
+
+.booking-popup-form .form-label {
+    letter-spacing: 0.01em;
+}
+
+.booking-popup-form .form-control {
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.booking-popup-form .form-control:focus {
+    border-color: #714B67 !important;
+    box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.15) !important;
+    outline: none;
+}
+
+/* Input group button integration */
+.booking-popup-form .input-group .btn {
+    border-top-right-radius: 0.5rem !important;
+    border-bottom-right-radius: 0.5rem !important;
+    border-left: 0;
+}
+
+.booking-popup-form .input-group .form-control {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+/* Party Size Stepper */
+.party-size-stepper {
+    background: #ffffff;
+    border: 1px solid #d1d5db !important;
+}
+
+.party-size-stepper .stepper-btn {
+    min-width: 42px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+    transition: background-color 0.15s;
+    user-select: none;
+}
+
+.party-size-stepper .stepper-btn:hover {
+    background-color: #f3f4f6;
+    color: #111827;
+}
+
+.party-size-stepper input[type=number]::-webkit-inner-spin-button,
+.party-size-stepper input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Table Resource Selection Chips */
+.table-resource-grid {
+    background-color: #f9fafb !important;
+    border-color: #e5e7eb !important;
+}
+
+.booking-table-chip {
+    cursor: pointer;
+    border-color: #d1d5db !important;
+    background-color: #ffffff;
+    font-weight: 500;
+    transition: all 0.15s ease-in-out;
+}
+
+.booking-table-chip:hover {
+    border-color: #714B67 !important;
+    background-color: #fdf8fb;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.booking-table-chip.active {
+    background-color: #714B67 !important;
+    border-color: #5c3c54 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(113, 75, 103, 0.35) !important;
+}
+
+.booking-table-chip.active .badge {
+    background-color: rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+}

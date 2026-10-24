@@ -17,6 +17,11 @@ class PosConfig(models.Model):
     )
 
     @api.model
+    def _load_pos_data_fields(self, config):
+        params = super()._load_pos_data_fields(config)
+        return list(set(params + ['accept_remote_orders', 'is_delivery_config']))
+
+    @api.model
     def _cron_auto_open_delivery_session(self):
         """
         Ensure all Delivery / Virtual POS configs always have an open session.

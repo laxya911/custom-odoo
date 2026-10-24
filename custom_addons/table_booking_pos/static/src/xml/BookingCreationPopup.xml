@@ -1,94 +1,147 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates id="template" xml:space="preserve">
-    <t t-name="table_booking_pos.BookingCreationPopup" owl="1">
-        <Dialog title="'New Table Reservation'" size="'lg'">
-            <div class="row g-3">
+    <t t-name="table_booking_pos.BookingCreationPopup">
+        <Dialog title="'New Table Reservation'" size="'lg'" contentClass="'booking-creation-modal'">
+            <div class="booking-popup-form py-1">
                 <!-- Error Alert -->
-                <div t-if="state.error" class="col-12">
-                    <div class="alert alert-danger mb-3 py-2 shadow-sm d-flex align-items-center">
-                        <i class="fa fa-exclamation-triangle me-2" />
-                        <span t-esc="state.error" />
-                    </div>
+                <div t-if="this.state.error" class="alert alert-danger mb-3 py-2 px-3 d-flex align-items-center rounded-3">
+                    <i class="oi oi-filled text-danger fs-5 me-2" data-icon="warning" />
+                    <span class="fw-semibold text-danger" t-out="this.state.error" />
                 </div>
 
-                <!-- Customer Section -->
-                <div class="col-12 border-bottom pb-2 mb-2">
-                    <label class="fw-bold text-muted small text-uppercase">Customer Information</label>
-                    <div class="row mt-2">
-                        <div class="col-6">
-                            <label class="small text-muted">Name</label>
-                            <div class="input-group">
-                                <input class="form-control rounded-start-pill border-0 shadow-sm" type="text" t-model="state.customerName" placeholder="Full name" />
-                                <button class="btn btn-primary rounded-end-pill shadow-sm" t-on-click="selectPartner">
-                                    <i class="fa fa-search" />
-                                </button>
+                <div class="row g-3">
+                    <!-- Left Column: Customer & Notes -->
+                    <div class="col-12 col-md-6 d-flex flex-column gap-3">
+                        <!-- Customer Section -->
+                        <div class="card border rounded-3 p-3 bg-view shadow-sm flex-grow-1">
+                            <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+                                <i class="oi oi-filled text-primary me-2" data-icon="person" />
+                                <span class="fw-bold small text-uppercase text-muted">Customer Information</span>
+                            </div>
+                            <div class="d-flex flex-column gap-2">
+                                <div>
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Customer Name *</label>
+                                    <div class="input-group">
+                                        <input class="form-control" type="text" t-model.proxy="this.state.customerName" placeholder="Full name" />
+                                        <button class="btn btn-outline-secondary px-3 d-flex align-items-center gap-1" type="button" t-on-click="this.selectPartner" title="Find Existing Customer">
+                                            <i class="oi" data-icon="search" />
+                                            <span>Find</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Phone Number *</label>
+                                    <input class="form-control" type="tel" t-model.proxy="this.state.customerPhone" placeholder="e.g. +1 555-0199" />
+                                </div>
+                                <div>
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Email (Optional)</label>
+                                    <input class="form-control" type="email" t-model.proxy="this.state.customerEmail" placeholder="guest@example.com" />
+                                </div>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <label class="small text-muted">Phone</label>
-                            <input class="form-control rounded-pill border-0 shadow-sm" type="text" t-model="state.customerPhone" placeholder="Phone number" />
+
+                        <!-- Notes Section -->
+                        <div class="card border rounded-3 p-3 bg-view shadow-sm">
+                            <div class="d-flex align-items-center mb-2 pb-2 border-bottom">
+                                <i class="oi text-primary me-2" data-icon="notes" />
+                                <span class="fw-bold small text-uppercase text-muted">Special Requests / Notes</span>
+                            </div>
+                            <textarea class="form-control" rows="3" t-model.proxy="this.state.notes" placeholder="e.g. Birthday celebration, window seat, high chair requested..."></textarea>
                         </div>
                     </div>
-                </div>
 
-                <!-- Booking Details Section -->
-                <div class="col-6">
-                    <label class="fw-bold text-muted small text-uppercase">Date</label>
-                    <input class="form-control rounded-pill border-0 shadow-sm mt-1" type="date" t-model="state.date" />
-                </div>
-                <div class="col-6">
-                    <label class="fw-bold text-muted small text-uppercase">Time</label>
-                    <input class="form-control rounded-pill border-0 shadow-sm mt-1" type="time" t-model="state.time" />
-                </div>
-
-                <div class="col-12 mt-3">
-                    <label class="fw-bold text-muted small text-uppercase">Party Size</label>
-                    <div class="d-flex align-items-center mt-1">
-                        <button class="btn btn-outline-secondary rounded-circle" t-on-click="() => state.partySize = Math.max(1, state.partySize - 1)" style="width: 32px; height: 32px; line-height: 20px;">-</button>
-                        <input class="form-control text-center mx-2 border-0 shadow-sm fw-bold" type="number" t-model="state.partySize" style="width: 60px;" />
-                        <button class="btn btn-outline-secondary rounded-circle" t-on-click="() => state.partySize = state.partySize + 1" style="width: 32px; height: 32px; line-height: 20px;">+</button>
-                        <span class="ms-3 text-muted">people</span>
-                    </div>
-                </div>
-
-                <!-- Resource Selection Section -->
-                <div class="col-12 mt-3">
-                    <label class="fw-bold text-muted small text-uppercase">Select Tables</label>
-                    <div class="table-resource-grid d-flex flex-wrap gap-2 mt-2 py-2">
-                        <t t-foreach="state.availableResources" t-as="resource" t-key="resource.id">
-                            <div t-attf-class="resource-badge btn rounded-pill px-3 py-2 border {{ state.tableIds.includes(resource.id) ? 'btn-primary border-primary shadow-sm' : 'btn-light border-secondary-subtle text-muted' }}" 
-                                 t-on-click="() => this.toggleTable(resource.id)">
-                                <i class="fa fa-cutlery me-1" />
-                                <span t-esc="resource.name" />
-                                <span class="ms-1 small opacity-75">(<t t-esc="resource.capacity" />p)</span>
+                    <!-- Right Column: Date, Party Size & Tables -->
+                    <div class="col-12 col-md-6 d-flex flex-column gap-3">
+                        <!-- Reservation Schedule & Party Size -->
+                        <div class="card border rounded-3 p-3 bg-view shadow-sm">
+                            <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+                                <i class="oi oi-filled text-primary me-2" data-icon="calendar_today" />
+                                <span class="fw-bold small text-uppercase text-muted">Date &amp; Party Size</span>
                             </div>
-                        </t>
-                        <t t-if="!state.availableResources.length">
-                            <span class="text-muted small italic">No booking tables found.</span>
-                        </t>
-                    </div>
-                </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Date *</label>
+                                    <input class="form-control" type="date" t-model.proxy="this.state.date" />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Time Slot *</label>
+                                    <input class="form-control" type="time" t-model.proxy="this.state.time" />
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label small fw-semibold text-secondary mb-1">Party Size</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="party-size-stepper d-inline-flex align-items-center border rounded-3 overflow-hidden bg-white shadow-sm">
+                                        <button type="button" class="stepper-btn btn btn-light px-3 py-2 fw-bold text-secondary" t-on-click="() => this.state.partySize = Math.max(1, (Number(this.state.partySize) || 1) - 1)">
+                                            <span class="fs-5 lh-1">-</span>
+                                        </button>
+                                        <input class="form-control border-0 text-center fw-bold bg-transparent px-2" type="number" t-model.number.proxy="this.state.partySize" style="width: 60px; font-size: 1.1rem;" min="1" max="50" />
+                                        <button type="button" class="stepper-btn btn btn-light px-3 py-2 fw-bold text-secondary" t-on-click="() => this.state.partySize = (Number(this.state.partySize) || 1) + 1">
+                                            <span class="fs-5 lh-1">+</span>
+                                        </button>
+                                    </div>
+                                    <span class="text-muted fw-semibold ms-2">guests</span>
+                                </div>
+                            </div>
+                        </div>
 
-                <!-- Notes Section -->
-                <div class="col-12 mt-3">
-                    <label class="fw-bold text-muted small text-uppercase">Special Requests / Notes</label>
-                    <textarea class="form-control rounded-4 border-0 shadow-sm mt-1" rows="2" t-model="state.notes" placeholder="e.g. Birthday celebration, window seat..."></textarea>
+                        <!-- Select Tables Section -->
+                        <div class="card border rounded-3 p-3 bg-view shadow-sm flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                <div class="d-flex align-items-center">
+                                    <i class="oi text-primary me-2" data-icon="restaurant" />
+                                    <span class="fw-bold small text-uppercase text-muted">Select Table(s) *</span>
+                                </div>
+                                <div t-if="this.state.tableIds.length" class="d-flex align-items-center gap-1">
+                                    <span class="badge bg-primary text-white rounded-pill px-2 py-1 small">
+                                        <t t-out="`${this.state.tableIds.length} table(s)`" />
+                                    </span>
+                                    <span class="badge bg-secondary-subtle text-dark rounded-pill px-2 py-1 small">
+                                        <t t-out="`Capacity: ${this.selectedTotalCapacity} seats`" />
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="table-resource-grid d-flex flex-wrap gap-2 p-2 border rounded-3 bg-light" style="max-height: 195px; overflow-y: auto;">
+                                <t t-foreach="this.state.availableResources" t-as="resource" t-key="resource.id">
+                                    <button type="button"
+                                            class="booking-table-chip btn d-flex align-items-center gap-2 px-3 py-2 rounded-3 border"
+                                            t-att-class="this.state.tableIds.includes(resource.id) ? 'active btn-primary shadow-sm' : 'btn-light bg-white text-dark'"
+                                            t-on-click="() => this.toggleTable(resource.id)">
+                                        <i class="oi" data-icon="restaurant" />
+                                        <span class="fw-bold" t-out="resource.name" />
+                                        <span class="badge rounded-pill bg-body-secondary text-dark border ms-1" t-out="`${resource.capacity} seats`" />
+                                        <i t-if="this.state.tableIds.includes(resource.id)" class="oi text-white ms-1" data-icon="check" />
+                                    </button>
+                                </t>
+                                <t t-if="!this.state.availableResources.length">
+                                    <div class="text-muted small py-3 px-2 d-flex align-items-center gap-2 w-100 justify-content-center">
+                                        <i class="oi text-secondary" data-icon="info" />
+                                        <span>No tables found. Please configure floor tables in Point of Sale.</span>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <t t-set-slot="footer">
-                <button class="btn btn-lg btn-light border px-4 me-2 rounded-pill shadow-sm" t-on-click="props.close">
-                    <i class="fa fa-times me-2" />Cancel
-                </button>
-                <button class="btn btn-lg btn-primary px-5 rounded-pill shadow-sm" t-on-click="confirm" t-att-disabled="state.isLoading">
-                    <t t-if="state.isLoading">
-                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        Working...
-                    </t>
-                    <t t-else="">
-                        <i class="fa fa-check me-2" />Confirm Reservation
-                    </t>
-                </button>
+                <div class="d-flex justify-content-end gap-2 w-100 py-1">
+                    <button class="btn btn-light border px-4 py-2 rounded-3 fw-semibold text-secondary" t-on-click="this.props.close">
+                        Cancel
+                    </button>
+                    <button class="btn btn-primary px-4 py-2 rounded-3 fw-semibold shadow-sm d-flex align-items-center gap-2" t-on-click="this.confirm" t-att-disabled="this.state.isLoading">
+                        <t t-if="this.state.isLoading">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+                            <span>Saving...</span>
+                        </t>
+                        <t t-else="">
+                            <i class="oi" data-icon="check" />
+                            <span>Confirm Reservation</span>
+                        </t>
+                    </button>
+                </div>
             </t>
         </Dialog>
     </t>

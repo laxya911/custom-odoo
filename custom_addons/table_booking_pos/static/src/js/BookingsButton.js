@@ -7,14 +7,13 @@ import { patch } from "@web/core/utils/patch";
 
 export class BookingsButton extends Component {
     static template = "table_booking_pos.BookingsButton";
-    static props = {};
 
     setup() {
         this.pos = usePos();
     }
 
     get isActive() {
-        return this.pos.mainScreen.name === 'BookingsScreen';
+        return this.pos.router?.currentScreen() === 'BookingsScreen';
     }
 
     get count() {
@@ -27,6 +26,4 @@ export class BookingsButton extends Component {
     }
 }
 
-patch(Navbar, {
-    components: { ...Navbar.components, BookingsButton },
-});
+Navbar.components = { ...Navbar.components, BookingsButton };
