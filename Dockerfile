@@ -9,7 +9,7 @@ ARG VCS_REF
 # =============================================================================
 # Stage 1: Builder - Python dependencies only
 # =============================================================================
-FROM python:3.12-slim-bookworm AS builder
+FROM python:3.13-slim-bookworm AS builder
 
 # Install build dependencies (temporary, will be removed in final stage)
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -45,7 +45,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 # -----------------------------------------------------------------------------
 # Stage 2: Production - Minimal runtime image
 # -----------------------------------------------------------------------------
-FROM python:3.12-slim-bookworm AS production
+FROM python:3.13-slim-bookworm AS production
 
 # Build arguments from stage 1
 ARG BUILD_DATE
