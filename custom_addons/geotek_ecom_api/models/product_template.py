@@ -5,6 +5,9 @@ from odoo import models, api, fields
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
+    country_of_origin = fields.Many2one('res.country', string='Country of Origin')
+    l10n_in_hsn_code = fields.Char(string='HSN/SAC Code')
+
     @api.model
     def get_ecom_product_details(self, product_id):
         template = self.browse(int(product_id))
