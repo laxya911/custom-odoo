@@ -327,7 +327,8 @@ class AggregatorConfig(models.Model):
     @api.depends('provider')
     def _compute_webhook_url(self):
         """Generate webhook URL based on provider"""
-        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        ICP = self.env['ir.config_parameter'].sudo()
+        base_url = ICP.get_str('web.base.url') if hasattr(ICP, 'get_str') else ICP.get_param('web.base.url')
         for record in self:
             if record.provider:
                 # Changed from 'ubereats' to 'uber' to match Uber dashboard
@@ -524,7 +525,8 @@ class AggregatorConfig(models.Model):
             raise models.UserError("OAuth authorization is only available for Uber Eats")
         
         # Build authorization URL
-        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        ICP = self.env['ir.config_parameter'].sudo()
+        base_url = ICP.get_str('web.base.url') if hasattr(ICP, 'get_str') else ICP.get_param('web.base.url')
         redirect_uri = f"{base_url}/uber/oauth/callback"
         
         auth_url = (
