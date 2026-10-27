@@ -108,7 +108,7 @@ jobs:
       # Step 6: Build and push Docker image (zero-cache)
       # -----------------------------------------------------------------------
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
@@ -356,11 +356,11 @@ jobs:
           echo "📥 Updating application image tag to $TAG_NAME..."
           sed -i "s|^\(\s*image:\s*ghcr.io/laxya911/custom-odoo:\).*|\1${TAG_NAME}|g" docker-compose.yml
 
-          echo "📥 Pulling latest images..."
-          docker compose pull
+          echo "📥 Pulling latest Odoo application image..."
+          docker compose pull odoo
 
-          echo "🔄 Starting all services..."
-          docker compose up -d --force-recreate
+          echo "🔄 Updating Odoo application service..."
+          docker compose up -d odoo
 
           echo "✅ Deployment completed. Listing services..."
           docker ps --filter "label=com.docker.compose.project" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"

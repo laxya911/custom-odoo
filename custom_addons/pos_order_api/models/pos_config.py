@@ -19,6 +19,10 @@ class PosConfig(models.Model):
     @api.model
     def _load_pos_data_fields(self, config):
         params = super()._load_pos_data_fields(config)
+        if not params:
+            # In Odoo, empty list means all fields are read.
+            # Returning a subset blocks loading all other fields like 'use_pricelist'.
+            return []
         return list(set(params + ['accept_remote_orders', 'is_delivery_config']))
 
     @api.model

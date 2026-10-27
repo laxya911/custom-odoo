@@ -60,10 +60,11 @@ class PosOrder(models.Model):
         _logger.info(f"CREATE_API_ORDER: Start. Simulate: {order_data.get('simulate')}")
         # 1. Idempotency check
         unique_uuid = order_data.get('uuid')
-        existing = self.search([('unique_uuid', '=', unique_uuid)], limit=1)
-        if existing:
-            _logger.info(f"Duplicate Order Ignored: {unique_uuid}")
-            return existing
+        if unique_uuid:
+            existing = self.search([('unique_uuid', '=', unique_uuid)], limit=1)
+            if existing:
+                _logger.info(f"Duplicate Order Ignored: {unique_uuid}")
+                return existing
 
         # 2. Session resolution
         # STRICT MODE: Only find session that is OPEN, Delivery is ACTIVE, and Remote Orders ACCEPTED.
@@ -98,7 +99,8 @@ class PosOrder(models.Model):
         total_tax = 0.0
         lines_data = []
         
-        fiscal_position = self.env['account.fiscal.position'].browse(order_data.get('fiscal_position_id'))
+        fp_id = order_data.get('fiscal_position_id')
+        fiscal_position = self.env['account.fiscal.position'].browse(fp_id) if fp_id else session.config_id.default_fiscal_position_id
         
         _logger.info("🚀 [create_api_order] Incoming Payload: %s", pformat(order_data))
 
@@ -309,7 +311,39 @@ class PosOrder(models.Model):
         # Decisions based on payment mode
         payment_mode = order_data.get('payment_method', 'online')
         is_paid = payment_mode == 'online'
-        to_invoice = order_data.get('to_invoice', is_paid)
+        # Online orders are paid online unless COD is available; thus should be fully invoiced by default
+        to_invoice = order_data.get('to_invoice', is_paid and payment_mode != 'cod')
+
+        # Partner resolution
+        partner_id = order_data.get('partner_id')
+        cust_name = order_data.get('api_customer_name') or order_data.get('customer_name')
+        cust_phone = order_data.get('api_customer_phone') or order_data.get('customer_phone')
+        if not partner_id and (cust_name or cust_phone):
+            domain = []
+            if cust_phone:
+                domain.append(('phone', '=', cust_phone))
+            elif cust_name:
+                domain.append(('name', '=', cust_name))
+            existing_partner = self.env['res.partner'].sudo().search(domain, limit=1)
+            if existing_partner:
+                partner_id = existing_partner.id
+            elif cust_name:
+                new_partner = self.env['res.partner'].sudo().create({
+                    'name': cust_name,
+                    'phone': cust_phone or False,
+                    'street': order_data.get('api_delivery_address') or False,
+                })
+                partner_id = new_partner.id
+
+        # Fallback partner if still missing and invoice is requested
+        if not partner_id and to_invoice:
+            default_partner = self.env['res.partner'].sudo().search([('name', '=', 'Online Customer')], limit=1)
+            if not default_partner:
+                default_partner = self.env['res.partner'].sudo().create({
+                    'name': 'Online Customer',
+                    'customer_rank': 1,
+                })
+            partner_id = default_partner.id
         
         order_vals = {
             'name': order_name,
@@ -323,7 +357,7 @@ class PosOrder(models.Model):
             'amount_total': amount_total,
             'amount_paid': amount_total if is_paid else 0.0,
             'amount_return': 0.0,
-            'partner_id': order_data.get('partner_id'),
+            'partner_id': partner_id,
             'fiscal_position_id': fiscal_position.id if fiscal_position else False,
             'pricelist_id': session.config_id.pricelist_id.id,
             'company_id': session.config_id.company_id.id,
@@ -339,10 +373,21 @@ class PosOrder(models.Model):
             'to_invoice': to_invoice,
         }
 
-        if is_paid:
+        payment_method_id = order_data.get('payment_method_id')
+        if not payment_method_id and is_paid:
+            non_cash_pm = session.config_id.payment_method_ids.filtered(lambda m: getattr(m, 'type', '') != 'cash')
+            if non_cash_pm:
+                payment_method_id = non_cash_pm[0].id
+            elif session.config_id.payment_method_ids:
+                payment_method_id = session.config_id.payment_method_ids[0].id
+            else:
+                default_pm = self.env['pos.payment.method'].search([], limit=1)
+                payment_method_id = default_pm.id if default_pm else False
+
+        if is_paid and payment_method_id:
             order_vals['payment_ids'] = [[0, 0, {
                 'amount': amount_total,
-                'payment_method_id': order_data['payment_method_id'],
+                'payment_method_id': payment_method_id,
                 'name': uuid.uuid4().hex[:8],
                 'company_id': session.config_id.company_id.id,
                 # Use standard Odoo card fields
@@ -354,8 +399,8 @@ class PosOrder(models.Model):
         
         # Determine accounting payment method for invoice
         invoice_payment_method_id = False
-        if is_paid:
-            payment_method = self.env['pos.payment.method'].browse(order_data['payment_method_id'])
+        if is_paid and payment_method_id:
+            payment_method = self.env['pos.payment.method'].browse(payment_method_id)
             # Most POS payment methods have a journal with inbound methods
             if payment_method.journal_id and payment_method.journal_id.inbound_payment_method_line_ids:
                  # Prefer anything named 'stripe' or 'bank'
@@ -387,20 +432,23 @@ class PosOrder(models.Model):
             # Generate Invoice if requested
             if to_invoice:
                 _logger.info(f"Generating invoice for order {order.name}")
-                # Skip PDF generation to avoid wkhtmltopdf dependency errors in local environments
-                order.with_context(generate_pdf=False).action_pos_order_invoice()
-                
-                # After invoice creation, set the accounting payment method if we found one
-                if order.account_move and invoice_payment_method_id:
-                    # 'payment_method_line_id' is the standard field in Odoo 17+ for inbound payments
-                    # 'preferred_payment_method_line_id' is the custom field seen in user UI
-                    try:
-                        order.account_move.write({
-                            'payment_method_line_id': invoice_payment_method_id,
-                            'preferred_payment_method_line_id': invoice_payment_method_id
-                        })
-                    except:
-                        pass
+                try:
+                    # Skip PDF generation to avoid wkhtmltopdf dependency errors in local environments
+                    order.with_context(generate_pdf=False).action_pos_order_invoice()
+                    
+                    # After invoice creation, set the accounting payment method if we found one
+                    if order.account_move and invoice_payment_method_id:
+                        # 'payment_method_line_id' is the standard field in Odoo 17+ for inbound payments
+                        # 'preferred_payment_method_line_id' is the custom field seen in user UI
+                        try:
+                            order.account_move.write({
+                                'payment_method_line_id': invoice_payment_method_id,
+                                'preferred_payment_method_line_id': invoice_payment_method_id
+                            })
+                        except Exception:
+                            pass
+                except Exception as inv_err:
+                    _logger.error(f"Invoice generation failed for order {order.name}: {inv_err}", exc_info=True)
 
             # 6. Trigger real-time sync in POS using native Odoo 19 notification pattern
             # pos.config inherits pos.bus.mixin, which sends to the config's access_token channel.
@@ -418,6 +466,7 @@ class PosOrder(models.Model):
                     'order_id': order.id,
                     'pos_reference': order.pos_reference,
                     'amount_total': order.amount_total,
+                    'uuid': order.uuid,
                     'source': 'online'
                 }
                 

@@ -128,6 +128,8 @@ class TableBooking(models.Model):
         if config.service_period_ids:
             for p in config.service_period_ids:
                 periods.append((p.opening_time, p.closing_time))
+        else:
+            periods.append((config.opening_time, config.closing_time))
 
         slot_duration = config.slot_duration_minutes
         slot_interval = config.slot_interval_minutes

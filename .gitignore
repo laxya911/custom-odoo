@@ -51,3 +51,6 @@ package.json
 /man/
 /share/
 /src/
+
+# Test storefront application (isolated local testing)
+/test-storefront/

@@ -8,7 +8,7 @@ _logger = logging.getLogger(__name__)
 
 class TableBookingController(http.Controller):
 
-    @http.route('/api/table_booking/config', type='jsonrpc', auth='public', methods=['POST'], website=True)
+    @http.route('/api/table_booking/config', type='jsonrpc', auth='public', methods=['POST'])
     def get_booking_config(self, **kwargs):
         """Fetch current booking configuration for Next.js UI"""
         pos_config_id = kwargs.get('pos_config_id')
@@ -33,7 +33,7 @@ class TableBookingController(http.Controller):
             }
         }
 
-    @http.route('/api/table_booking/slots', type='jsonrpc', auth='public', methods=['POST'], website=True)
+    @http.route('/api/table_booking/slots', type='jsonrpc', auth='public', methods=['POST'])
     def get_available_slots(self, date=None, party_size=1, config_id=None, **kwargs):
         """Get available booking slots for a date and party size"""
         if not date or not config_id:
@@ -49,7 +49,7 @@ class TableBookingController(http.Controller):
             _logger.error("Error fetching slots: %s", str(e))
             return {'status': 'error', 'message': str(e)}
 
-    @http.route('/api/table_booking/book', type='jsonrpc', auth='public', methods=['POST'], website=True)
+    @http.route('/api/table_booking/book', type='jsonrpc', auth='public', methods=['POST'])
     def create_booking(self, **kwargs):
         """Create a new table booking"""
         customer_data = kwargs.get('customer')
@@ -100,7 +100,7 @@ class TableBookingController(http.Controller):
             _logger.error("Error creating booking: %s", str(e))
             return {'status': 'error', 'message': str(e)}
 
-    @http.route('/api/table_booking/cancel', type='jsonrpc', auth='public', methods=['POST'], website=True)
+    @http.route('/api/table_booking/cancel', type='jsonrpc', auth='public', methods=['POST'])
     def cancel_booking(self, token=None, **kwargs):
         """Self-cancel a booking via token"""
         if not token:
